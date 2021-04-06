@@ -7,13 +7,28 @@ Created on 30/3/21
 """
 
 import pandas as pd
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+
+parser.add_argument('-bigg', '--bigg_models', help="""Path to the file bigg_models_w_classes_curated.tsv""", required=True)
+parser.add_argument('-i', '--in_micom', help="""Path to the micom exchnage results (e.g. exchanges_grow_sample_1.csv)""", required=True)
+
+parser.add_argument('-on', '--out_nodes', help="output file name for nodes", required=True)
+parser.add_argument('-oe', '--out_edges', help="output file name for edges", required=True)
 
 
-in_bigg = "bigg_models_w_classes.tsv"
-in_micom = "result_exchanges_example.csv"
+args = parser.parse_args()
+in_bigg = args.bigg_models
+in_micom = args.in_micom
+out_nodes = args.out_nodes
+out_edges = args.out_edges
 
-out_nodes = "nodes.csv"
-out_edges = "edges.csv"
+
+#in_bigg = "bigg_models_w_classes_curated.tsv"
+#in_micom = "exchanges_grow_sample_3.csv"
+#out_nodes = "nodes_biome3.csv"
+#out_edges = "edges_biome3.csv"
 
 ### Import tables
 exchanges = pd.read_csv(in_micom, index_col=0)
