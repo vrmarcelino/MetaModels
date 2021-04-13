@@ -22,7 +22,7 @@ parser.add_argument('-oe', '--out_edges', help="output file name for edges", req
 args = parser.parse_args()
 in_bigg = args.bigg_models
 in_micom = args.in_micom
-in_n_react = args.reactions
+in_n_react = args.in_reactions
 out_nodes = args.out_nodes
 out_edges = args.out_edges
 
