@@ -24,8 +24,9 @@ with open(in_HQ_bins) as f:
 out = open(out_samples2domain, 'w')
 with open(in_samples2domain) as s:
     for line in s:
-        bin = line.split(",")[0]
+        bin = line.split("\t")[0]
         if bin in wanted_bins:
+            print (bin)
             out.write(line)
 
 out.close()
