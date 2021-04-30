@@ -30,3 +30,4 @@ with open(in_samples2domain) as s:
             out.write(line)
 
 out.close()
+
