@@ -1,114 +1,120 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Script to run MICOM for one community type (a.k.a. sample or biome)
-Specifically - run the 'grow' workflow
-Later - test the cooperative trade-off
-
+Script to extract minimal growth media and optimize the cooperative tradeoff
+Run this after MICOM_build_comm_models.py
 Created on 30/3/21
-edited: 08/03/21
+edited: 06/05/21
 @author: V.R.Marcelino
+
+Script adapted from C. Diener's scripts:
+https://github.com/micom-dev/paper
 """
 
-from micom import Community
-import pandas as pd
-from micom.qiime_formats import load_qiime_medium
-from micom.workflows import grow
-from micom.workflows import build
-from micom import load_pickle
+#imports
 import os
 from argparse import ArgumentParser
+import pandas as pd
+from micom import load_pickle
+from micom.media import minimal_medium
+from micom.workflows import workflow
+from micom.logger import logger
 
 
 parser = ArgumentParser()
-parser.add_argument('-f', '--folder_fp', help="""Path to folder containing MAG tables""", required=False, default="0_MAGs_tables/")
-parser.add_argument('-s', '--sample', help="""sample, or community type, to be analysed""", required=True)
-parser.add_argument('-t', '--trade_off', help="""trade_off (fration) to use in the cooperative tradeoff""", required=False, default=0.5)
+parser.add_argument('-s', '--sample_list', help="""path to a txt file containing sample.pickle names""", required=True)
+parser.add_argument('-p', '--pickles_path', help="""path to the folder containing the pickle files. Default = 1_communities""", required=False, default="1_communities")
+parser.add_argument('-trad', '--trade_off', help="""trade_off (fration) to use in the cooperative tradeoff""", required=False, default=0.5)
+parser.add_argument('-t', '--threads', help="""number of threads. Default = 2""", required=False, default=2)
+parser.add_argument('-o', '--out_folder', help="""output_folder. Default = 2_TradeOffs""", required=False, default="2_TradeOffs")
+
 
 args = parser.parse_args()
 
-
-# community type and file_paths:
-in_folder = args.folder_fp
-sample = args.sample
+samples_fp = args.sample_list
+pickles_path = args.pickles_path
 trade_off = args.trade_off # fraction
+max_procs = args.threads
+out_dir=args.out_folder
+
+#samples_fp='1_communities/samples.txt'
+#pickles_path = '1_communities'
+#trade_off = 0.5
+#max_procs = 2
+#out_dir = "2_TradeOffs"
 
 
-#in_folder = '0_MAGs_tables/'
-#sample = 'sample_1'
+## make out dir
+if not os.path.exists(out_dir):
+    os.mkdir(out_dir)
 
-# folder to store intermediate files
-model_path = "1_interm_files"
-#os.mkdir(model_path)
-
-
-### import MAGs table containing genome-scale model paths
-## in the tutorial, they call this table 'taxonomy'
-fp = in_folder + sample + ".csv"
-mag_tb = pd.read_csv(fp)
-
-#convert to relative abundances (check whether it is necessary?!)
-mag_tb['abundance'] = mag_tb['abundance'].div(mag_tb['abundance'].sum())
+## read sample names to a list
+with open(samples_fp) as f:
+    samples = f.read().splitlines()
+if 'samples.txt' in samples:
+    samples.remove('samples.txt') #there if the list was created with ls -1 > samples.txt
 
 
-##############################
-# BUILD COMMUNITY MODELS
+## function that optimizes the cooperative tradeoff, first using the western media for upper boundaries,
+## then using the minimal media to get the metabolic exchanges
+def media_and_gcs(sam):
 
-# In order to convert the specification in a community model we will use the Community class from micom
-# which derives from the cobrapy Model class.
-# this took ~45 sec for 10 MAGs
+    com = load_pickle(pickles_path +"/"+ sam)
 
-#com = Community(mag_tb)
-#print("Built a community with a total of {} reactions.".format(len(com.reactions)))
+    # Get growth rates
+    try:
+        sol = com.cooperative_tradeoff(fraction=trade_off)
+        rates = sol.members["growth_rate"].copy()
+        rates["community"] = sol.growth_rate
+        rates.name = sam
+    except Exception:
+        logger.warning("Could not solve cooperative tradeoff for %s." % sam)
+        return None
 
+    # Get the minimal medium
+    med = minimal_medium(com, 0.95 * sol.growth_rate, exports=True)
+    med.name = sam
 
-
-# add media - using the western diet as a media:
-#medium = load_qiime_medium("0_diet/western_diet_gut_carveme.qza")
-# replace _m with _e_m (see what needs to change with the --fbc2 models)
-#medium = medium.replace(regex=r'_m$', value='_e_m')
-
-# check if the names match & add to the community object:
-#ex_ids = [r.id for r in com.exchanges]
-#medium['reaction'].isin(ex_ids).sum() # must be a large number of reactions (>100)
-#medium.index = medium.index.str.replace(r'_m$','_e_m', regex=True)
-#med = medium[medium.index.isin(ex_ids)] # exclude medium items not used by the microbiome
-
-# check if it is the flux that should be used as media in the community object.
-# This only affects the com.cooperative_tradeoff (the grow workflow is not affected)
-#com.medium = med['flux']
-
-
-# save this community to file (Can I save one pickle file per GEM?)
-comm_fp = model_path + "/" + sample + "_community.pickle"
-#com.to_pickle(comm_fp)
-#load it:
-com = load_pickle(comm_fp)
-# see exchanges:
-#com.exchanges
-
-print("Loaded a community with a total of {} reactions.".format(len(com.reactions)))
+    # Apply medium and reoptimize
+    com.medium = med[med > 0]
+    sol = com.cooperative_tradeoff(fraction=0.5, fluxes=True, pfba=False) # uses the 'classic' FBA instead of the parsimonious FBA
+    fluxes = sol.fluxes
+    fluxes["sample"] = sam
+    return {"medium": med, "gcs": rates, "fluxes": fluxes}
 
 
-#############################
-# Cooperative trade-off
+gcs = pd.DataFrame()
+media = pd.DataFrame()
+fluxes = pd.DataFrame()
 
+#run multiple samples in parallel with micom.workflow
 print ("\n simulating cooperative trade-off\n")
+results = workflow(media_and_gcs, samples, max_procs)
 
-sol = com.cooperative_tradeoff(fraction=trade_off, fluxes=True, pfba=True)
-sol
+for r in results:
+    gcs = gcs.append(r["gcs"])
+    media = media.append(r["medium"])
+    fluxes = fluxes.append(r["fluxes"])
 
-####### from Basile tutorial - save file:
-matrix=sol.fluxes
-matrix1=matrix.filter(regex='^EX_')
-out_fp = "coop_tradeoff_fluxes_" + sample + ".csv"
-outfile=open(out_fp,"w")
-matrix1.to_csv(outfile)
-outfile.close()
+gcs_fp = out_dir + "/growth_rates.csv"
+media_fp = out_dir + "/minimal_imports.csv"
+fluxes_fp = out_dir + "/minimal_fluxes_all.csv"
 
+gcs.to_csv(gcs_fp)
+media.to_csv(media_fp)
+fluxes.to_csv(fluxes_fp)
 
+### Get only the flux of the exchange_reactions:
+# exchange reactions are reactions that move metabolites across in silico compartments.
+ex_fluxes_fp = out_dir + "/minimal_fluxes_exchange.csv"
+ex_flux = fluxes.filter(regex='^EX_') # get only exchanges (starts with 'EX_'
+ex_flux = ex_flux.filter(regex='e$') # remove media (media ends with 'e_m', so I want the ones that end with 'e' only)
+ex_flux = ex_flux.drop(index='medium').fillna(0) #remove medium and fill NANs with zeros
+ex_flux = ex_flux.loc[:, (ex_flux != 0).any(axis=0)] #remove columns with all zeros
 
-print ("\nDONE!!\n")
+ex_flux.to_csv(ex_fluxes_fp)
+
+print ("\nDONE! Exchange fluxes saved to %s\n"%(ex_fluxes_fp))
 
 
 
