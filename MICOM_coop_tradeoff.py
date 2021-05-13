@@ -34,7 +34,7 @@ args = parser.parse_args()
 samples_fp = args.sample_list
 pickles_path = args.pickles_path
 trade_off = args.trade_off # fraction
-max_procs = args.threads
+max_procs = int(args.threads)
 out_dir=args.out_folder
 
 #samples_fp='1_communities/samples.txt'

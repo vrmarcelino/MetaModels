@@ -11,10 +11,10 @@ import os
 from argparse import ArgumentParser
 
 parser = ArgumentParser()
-parser.add_argument('-kma', '--kma', help="""Path to the merged kam results at species level, produced with  0_PCAs_MAGs_species_level.R.""", required=True)
-parser.add_argument('-dmm', '--dmm', help="""Path to the DMM sample assignments (1_sample_assignments_DMM_species.csv)""", required=True)
+parser.add_argument('-kma', '--kma', help="""Path to the merged KMA results at species level, produced with  0_PCAs_MAGs_species_level.R (2_ccm_otus_clean_aggregated.csv)""", required=True)
+parser.add_argument('-dmm', '--dmm', help="""Path to the DMM sample assignments (1_sample_assignments_DMM_MAGs_sp_level.csv)""", required=True)
 parser.add_argument('-GEMs', '--GEMs', help="""Path to the folder containing the Genome scale metabolic models""", required=True)
-parser.add_argument('-b', '--sp2bin', help="file indicating the highest quality bin for each species, produced with select_MAGs.py", required=True)
+parser.add_argument('-b', '--sp2bin', help="file indicating the highest quality bin for each species, produced with select_MAGs.py (HQ_bins_with_compl.csv)", required=True)
 
 parser.add_argument('-of', '--output_folder', default = '5_MICOM/0_MAGs_tables',
                     help='Path to the output folder where tables will be stored. Default = 5_MICOM/0_MAGs_tables', required=False)

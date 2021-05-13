@@ -18,10 +18,12 @@ from argparse import ArgumentParser
 
 
 parser = ArgumentParser()
-parser.add_argument('-f', '--tables_fp', help="""Path to folder containing MAGs (or community) tables""", required=False, default="0_MAGs_tables")
-parser.add_argument('-p', '--pickles', help="""Path to folders to store the community models""", required=False, default="1_communities")
 parser.add_argument('-s', '--sample', help="""sample, or community type, to be analysed. Must be present in the 
 folder containing MAGs (or community) tables""", required=True)
+
+parser.add_argument('-f', '--tables_fp', help="""Path to folder containing MAGs (or community) tables""", required=False, default="0_MAGs_tables")
+parser.add_argument('-p', '--pickles', help="""Path to folders to store the community models""", required=False, default="1_communities")
+
 parser.add_argument('-m', '--media', help="path to the media file", required=False, default="0_diet/western_diet_gut_carveme.qza")
 
 
