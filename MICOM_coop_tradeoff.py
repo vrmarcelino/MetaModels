@@ -107,10 +107,12 @@ fluxes.to_csv(fluxes_fp)
 ### Get only the flux of the exchange_reactions:
 # exchange reactions are reactions that move metabolites across in silico compartments.
 ex_fluxes_fp = out_dir + "/minimal_fluxes_exchange.csv"
-ex_flux = fluxes.filter(regex='^EX_') # get only exchanges (starts with 'EX_'
+ex_flux = fluxes.filter(regex='^EX_') # get only exchanges (starts with 'EX_')
 ex_flux = ex_flux.filter(regex='e$') # remove media (media ends with 'e_m', so I want the ones that end with 'e' only)
 ex_flux = ex_flux.drop(index='medium').fillna(0) #remove medium and fill NANs with zeros
+
 ex_flux = ex_flux.loc[:, (ex_flux != 0).any(axis=0)] #remove columns with all zeros
+ex_flux['sample'] = fluxes['sample']
 
 ex_flux.to_csv(ex_fluxes_fp)
 
