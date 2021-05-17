@@ -79,7 +79,6 @@ med = medium[medium.index.isin(ex_ids)] # exclude medium items not used by the m
 diet = med.flux * med.dilution # dilute nutrients absorbed in the small intestine
 
 
-# check if it is the flux that should be used as media in the community object.
 # This only affects the com.cooperative_tradeoff (the grow workflow is not affected)
 com.medium = diet
 

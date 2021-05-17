@@ -19,6 +19,7 @@ from micom import load_pickle
 from micom.media import minimal_medium
 from micom.workflows import workflow
 from micom.logger import logger
+import time
 
 
 parser = ArgumentParser()
@@ -37,7 +38,7 @@ trade_off = args.trade_off # fraction
 max_procs = int(args.threads)
 out_dir=args.out_folder
 
-#samples_fp='1_communities/samples.txt'
+#samples_fp='1_communities/individual_ERR_samples_test.txt'
 #pickles_path = '1_communities'
 #trade_off = 0.5
 #max_procs = 2
@@ -96,9 +97,14 @@ for r in results:
     media = media.append(r["medium"])
     fluxes = fluxes.append(r["fluxes"])
 
-gcs_fp = out_dir + "/growth_rates.csv"
-media_fp = out_dir + "/minimal_imports.csv"
-fluxes_fp = out_dir + "/minimal_fluxes_all.csv"
+# get timestamp:
+ts = str(round(time.time()))
+print ("timestamp: %s"%(ts))
+
+
+gcs_fp = out_dir + "/growth_rates_" + ts + ".csv"
+media_fp = out_dir + "/minimal_imports_" + ts + ".csv"
+fluxes_fp = out_dir + "/minimal_fluxes_all_" + ts + ".csv"
 
 gcs.to_csv(gcs_fp)
 media.to_csv(media_fp)
@@ -106,13 +112,14 @@ fluxes.to_csv(fluxes_fp)
 
 ### Get only the flux of the exchange_reactions:
 # exchange reactions are reactions that move metabolites across in silico compartments.
-ex_fluxes_fp = out_dir + "/minimal_fluxes_exchange.csv"
+ex_fluxes_fp = out_dir + "/minimal_fluxes_exchange_" + ts + ".csv"
 ex_flux = fluxes.filter(regex='^EX_') # get only exchanges (starts with 'EX_')
 ex_flux = ex_flux.filter(regex='e$') # remove media (media ends with 'e_m', so I want the ones that end with 'e' only)
-ex_flux = ex_flux.drop(index='medium').fillna(0) #remove medium and fill NANs with zeros
+ex_flux = ex_flux.fillna(0) #fill NANs with zeros
 
 ex_flux = ex_flux.loc[:, (ex_flux != 0).any(axis=0)] #remove columns with all zeros
 ex_flux['sample'] = fluxes['sample']
+ex_flux = ex_flux.drop(index='medium') # remove medium
 
 ex_flux.to_csv(ex_fluxes_fp)
 
