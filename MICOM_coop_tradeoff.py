@@ -116,7 +116,7 @@ for r in results:
 if samples_list_fp != None:
     ts = str(round(time.time()))
 else:
-    ts = samples.split(".pickle")[0]
+    ts = "".join(samples).split(".pickle")[0]
 print ("timestamp or sample_stamp: %s"%(ts))
 
 
