@@ -112,9 +112,13 @@ for r in results:
     media = media.append(r["medium"])
     fluxes = fluxes.append(r["fluxes"])
 
-# get timestamp:
-ts = str(round(time.time()))
-print ("timestamp: %s"%(ts))
+# get timestamp or use sample name (when running one sample at a time)
+if samples_list_fp != None:
+    ts = str(round(time.time()))
+else:
+    ts = samples.split(".pickle")[0]
+print ("timestamp or sample_stamp: %s"%(ts))
+
 
 
 gcs_fp = out_dir + "/growth_rates_" + ts + ".csv"
