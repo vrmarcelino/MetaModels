@@ -1,0 +1,14 @@
+path:
+    root: /home/vmar0011/scratch/05_Metabolic_Networks
+folder:
+    data: 0_Quality_Control/03_Rarefied
+    logs:  2_MAGs/log
+    assemblies: 2_MAGs/0_assemblies
+    scripts: /home/vmar0011/ad43/vmar0011/programs/metaGEM/scripts
+cores:
+    megahit: 12
+partition:
+    megahit: short
+params:
+    assemblyPreset: meta-sensitive
+    assemblyMin: 1000
