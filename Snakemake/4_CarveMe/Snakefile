@@ -1,0 +1,56 @@
+configfile: "carveMe_config.yaml"
+import json
+
+# run this after filtering out the low quality bins from the checkM output - use gtdbtk_filter.py
+
+# Process samples 2 domain file:
+samples2domain_fp = "2_MAGs/4_Classification/samples2domain_one_per_sp.tsv"
+samples2domain = {}
+with open(samples2domain_fp, 'r') as f:
+    for line in f:
+        parts = line.split('\t')
+        sample_x = parts[0]
+        samples2domain[sample_x] = parts[1].split("\n")[0]
+
+samples = list(samples2domain.keys())
+
+
+#create a list of samples - when not filtering gtdbtk results (and not using universe)
+#samples = glob_wildcards('2_MAGs/2_vamb/checkm.outdir/bins_HQ/{sample}/genes.faa').sample
+
+
+rule all:
+    input:
+        expand(config["path"]["root"]+"/"+config["folder"]["GEMs"]+"/{sample}.xml", sample = samples)
+
+
+rule carveme:
+    input:
+        bin = '2_MAGs/3_bins_HQ/{sample}/genes.faa',
+        media = config["media_db"]["metagem_media"]
+    output:
+        config["path"]["root"]+"/"+config["folder"]["GEMs"]+"/{sample}.xml"
+    params:
+        domain = lambda wildcards: samples2domain[wildcards.sample]
+    resources:
+        time_min=1440, mem_mb=20000, cpus=config["cores"]["carveme"]
+    benchmark:
+        config["path"]["root"]+"/3_Models/benchmarks/carveme/"+'{sample}.carveme.benchmark.txt'
+    log:
+        std_out = config["path"]["root"]+"/"+config["folder"]["logs"]+"/carveme/{sample}.log"
+    message:
+        """
+        Make sure that the input files are ORF annotated and preferably protein fasta.
+        If given raw fasta files, Carveme will run without errors but each contig will be treated as one gene.
+        Using M8 media (from metaGEM pipeline). This media was described in Tramontano et al 2018
+        """
+    shell:
+        """
+        mkdir -p logs
+       
+        echo "Begin carving GEM ... "
+        carve {input.bin} --gapfill M8 --mediadb {input.media} -u {params.domain} -v -o {output}
+        
+        echo "Done carving GEM. "
+        """
+

@@ -6,5 +6,7 @@
    "minimap_ppn": 12,
    "vamb_mem": 250000,
    "vamb_ppn": 12,
+   "checkm_mem": 100000,
+   "checkm_ppn": 12,   
    "vamb_params": "-o C -m 2000 --minfasta 500000 --outdir 2_vamb"
 }

@@ -1,0 +1,11 @@
+path:
+    root: /home/vmar0011/scratch/05_Metabolic_Networks
+folder:
+    logs: 3_Models/log
+    GEMs: 3_Models/1_GEMs
+cores:
+    carveme: 2
+partition:
+    carveme: short
+media_db:
+    metagem_media: /home/vmar0011/ad43/vmar0011/programs/metaGEM/scripts/media_db.tsv

@@ -1,0 +1,11 @@
+path:
+    root: /home/vmar0011/scratch/vmar0011/03_MetabolicNetworks
+folder:
+    data: 0_Quality_Control/03_Rarefied
+    logs:  2_MAGs/log
+    assemblies: 2_MAGs/0_assemblies
+cores:
+    megahit: 12
+params:
+    assemblyPreset: meta-sensitive
+    assemblyMin: 1000
