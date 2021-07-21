@@ -37,7 +37,7 @@ all_samples = pd.DataFrame()
 
 for file in os.listdir(elasticities_folder):
     if file.endswith(".csv"):
-        sample_name = re.split(r'_', file)[0]
+        sample_name = re.split(r'_', file)[1]
         result_fp = os.path.join(elasticities_folder, file)
 
         df = pd.read_csv(result_fp, sep=',', index_col=0, names=["reaction","taxon","effector","direction","elasticity","type"])
