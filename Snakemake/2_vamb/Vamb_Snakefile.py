@@ -42,7 +42,7 @@ for line in fh_in:
 rule all:
     input:
         "1_jgi_matrix/jgi.abundance.dat",
-        "2_vamb/clusters.tsv",
+        "2_vamb/clusters.tsv"
 
 rule cat_contigs:
     input:
@@ -50,13 +50,11 @@ rule cat_contigs:
     output:
         "contigs.flt.fna.gz"
     resources:
-        time_min=1440, mem_mb=10000, cpus=1
+        time_min=480, mem_mb=10000, cpus=1
     threads:
         int(1)
     log:
         "log/contigs/catcontigs.log"
-    conda:
-        "envs/vamb.yaml"
     shell:
         "concatenate.py {output} {input} -m 2000"
 
@@ -66,13 +64,13 @@ rule index:
     output:
         mmi = "contigs.flt.mmi"
     resources:
-        time_min=1440, mem_mb=100000, cpus=8
+        time_min=480, mem_mb=230000, cpus=8
     threads:
         int(1)
     log:
         "log/contigs/index.log"
-    conda: 
-        "envs/minimap2.yaml"
+    benchmark:
+        "benchmarks/index/"+"index.benchmark.txt"
     shell:
         "minimap2 -I {INDEX_SIZE} -d {output} {input} 2> {log}"
 
@@ -82,13 +80,11 @@ rule dict:
     output:
         dict = "contigs.flt.dict"
     resources:
-        time_min=1440, mem_mb=10000, cpus=1
+        time_min=240, mem_mb=12000, cpus=1
     threads:
         int(1)
     log:
         "log/contigs/dict.log"
-    conda:
-        "envs/samtools.yaml"
     shell:
         "samtools dict {input} | cut -f1-3 > {output} 2> {log}"
 
@@ -100,11 +96,13 @@ rule minimap:
     output:
         bam = temp("mapped/{sample}.bam")
     resources:
-        time_min=1440, mem_mb=MM_MEM, cpus=VAMB_PPN
+        time_min=360, mem_mb=MM_MEM, cpus=VAMB_PPN
     threads:
         int(MM_PPN)
     log:
         "log/map/{sample}.minimap.log"
+    benchmark:
+        "benchmarks/minimap/"+"{sample}.minimap.benchmark.txt"
     conda:
         "envs/minimap2.yaml"
     shell:
@@ -116,13 +114,15 @@ rule sort:
     output:
         temp("mapped/{sample}.sort.bam")
     resources:
-        time_min=1440, mem_mb=100000, cpus=2
+        time_min=240, mem_mb=100000, cpus=2
     params:
         prefix="mapped/tmp.{sample}"
     threads:
         int(2)
     log:
         "log/map/{sample}.sort.log"
+    benchmark:
+        "benchmarks/sort/"+"{sample}.sort.benchmark.txt"
     conda:
         "envs/samtools.yaml"
     shell:
@@ -134,15 +134,17 @@ rule jgi:
     output:
         jgi = temp("1_jgi/{sample}.raw.jgi")
     resources:
-        time_min=1440, mem_mb=10000, cpus=1
+        time_min=60, mem_mb=10000, cpus=1
     threads:
         int(1)
     log:
         "log/jgi/{sample}.jgi"
-    conda:
-        "envs/metabat2.yaml"
+    benchmark:
+        "benchmarks/jgi/"+"{sample}.jgi.benchmark.txt"
     shell:
-        "jgi_summarize_bam_contig_depths --noIntraDepthVariance --outputDepth {output} {input} 2>{log}"
+        """
+        echo 'running jgi...'
+        jgi_summarize_bam_contig_depths --noIntraDepthVariance --outputDepth {output} {input} 2>{log}"""
 
 rule cut_column1to3: 
     input:
@@ -150,9 +152,11 @@ rule cut_column1to3:
     output:
         "1_jgi/jgi.column1to3"
     resources:
-        time_min=1440, mem_mb=10000, cpus=1
+        time_min=240, mem_mb=10000, cpus=1
     log:
         "log/jgi/column1to3"
+    benchmark:
+        "benchmarks/cut_column1to3/"+"cut_column1to3.benchmark.txt"
     shell: 
         "cut -f1-3 {input} > {output} 2>{log}"
 
@@ -162,9 +166,11 @@ rule cut_column4to5:
     output:
         "1_jgi/{sample}.cut.jgi"
     resources:
-        time_min=1440, mem_mb=10000, cpus=1
+        time_min=60, mem_mb=10000, cpus=1
     log:
         "log/jgi/{sample}.cut.log"
+    benchmark:
+        "benchmarks/cut_column4to5/"+"{sample}.cut_column4to5.benchmark.txt"
     shell: 
         "cut -f1-3 --complement {input} > {output} 2>{log}"
 
@@ -175,7 +181,7 @@ rule paste_abundances:
     output:
         "1_jgi_matrix/jgi.abundance.dat" 
     resources:
-        time_min=1440, mem_mb=10000, cpus=1
+        time_min=60, mem_mb=10000, cpus=1
     log:
         "log/jgi/paste_abundances.log"
     shell: 
@@ -197,6 +203,8 @@ rule vamb:
         time_min=7200, cpus=VAMB_PPN, mem_mb=VAMB_MEM
     log:
         "log/vamb/vamb.log"
+    benchmark:
+        "benchmarks/vamb/"+"vamb.benchmark.txt"
     threads:
         int(VAMB_threads)
     conda:

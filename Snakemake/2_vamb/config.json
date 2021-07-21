@@ -2,9 +2,10 @@
    "contigs": "contigs.txt",
    "sample_data": "samples2data.txt",
    "index_size": "12G",
-   "minimap_mem": 100000,
+   "minimap_mem": 35000,
    "minimap_ppn": 12,
    "vamb_mem": 250000,
    "vamb_ppn": 12,
-   "vamb_params": "-o C -m 2000 --minfasta 500000 --outdir 2_vamb"
+   "vamb_params": "-o C -m 2000 --minfasta 500000",
+   "vamb_preload": ""
 }

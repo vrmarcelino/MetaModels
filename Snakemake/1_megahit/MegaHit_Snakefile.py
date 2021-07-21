@@ -2,7 +2,7 @@ configfile: "MegaHit_config.yaml"
 
 
 #create a list of samples
-samples = glob_wildcards('0_Quality_Control/03_Rarefied/{sample}_R1.fq.gz').sample
+samples = glob_wildcards('0_Quality_Control/03_Rarefied/{sample}_R1.fq').sample
 
 
 rule all:
@@ -12,12 +12,12 @@ rule all:
 
 rule megahit:
     input:
-        R1 = "0_Quality_Control/03_Rarefied/{sample}_R1.fq.gz",
-        R2 = "0_Quality_Control/03_Rarefied/{sample}_R2.fq.gz"
+        R1 = "0_Quality_Control/03_Rarefied/{sample}_R1.fq",
+        R2 = "0_Quality_Control/03_Rarefied/{sample}_R2.fq"
     output:
        config["path"]["root"]+"/"+config["folder"]["assemblies"]+"/{sample}/contigs.fasta.gz"
     resources:
-        time_min=360, mem_mb=100000, cpus=config["cores"]["megahit"]
+        time_min=240, mem_mb=12000, cpus=config["cores"]["megahit"]
     benchmark:
         config["path"]["root"]+"/benchmarks/megahit/"+'{sample}.megahit.benchmark.txt'
     params:
@@ -27,10 +27,11 @@ rule megahit:
     shell:
         """
         echo "Running megahit ... "
-
-        module load pigz
         module load megahit/1.2.9
-        
+        module load pigz
+
+        #note - using '--continue' flag for the last batch of samples only (where I know that two jobs won't start of the same sample)
+
         megahit -t {config[cores][megahit]} \
             --presets {config[params][assemblyPreset]} \
             --verbose \
