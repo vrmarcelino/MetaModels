@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # set configurations
-INDEX_SIZE = config.get("index_size", "12G")
+INDEX_SIZE = config.get("index_size", "4G")
 MM_MEM = config.get("minimap_mem", 35000)
 MM_PPN = config.get("minimap_ppn", 10)
 VAMB_MEM = config.get("vamb_mem", 20000)
@@ -64,7 +64,7 @@ rule index:
     output:
         mmi = "contigs.flt.mmi"
     resources:
-        time_min=480, mem_mb=230000, cpus=8
+        time_min=1440, mem_mb=330000, cpus=8
     threads:
         int(1)
     log:
@@ -114,7 +114,7 @@ rule sort:
     output:
         temp("mapped/{sample}.sort.bam")
     resources:
-        time_min=240, mem_mb=100000, cpus=2
+        time_min=7200, mem_mb=100000, cpus=2
     params:
         prefix="mapped/tmp.{sample}"
     threads:

@@ -1,7 +1,7 @@
 {
-   "contigs": "contigs.txt",
-   "sample_data": "samples2data.txt",
-   "index_size": "12G",
+   "contigs": "contigs_training.txt",
+   "sample_data": "samples2data_training.txt",
+   "index_size": "4G",
    "minimap_mem": 35000,
    "minimap_ppn": 12,
    "vamb_mem": 250000,

@@ -33,6 +33,7 @@ with open (bigg_models_fp, 'r') as mets:
 ### read elasticity files and merge results
 
 # create new dataframe:
+
 all_samples = pd.DataFrame()
 
 for file in os.listdir(elasticities_folder):
@@ -42,11 +43,18 @@ for file in os.listdir(elasticities_folder):
 
         df = pd.read_csv(result_fp, sep=',', index_col=0, names=["reaction","taxon","effector","direction","elasticity","type"])
 
-        # sum the elasticity of a particular reaction across taxa affected by B. longum:
-        grouped_df = df.groupby(["reaction"]).elasticity.sum()
+        # calculate net elasticity (SUM Fwd) - (SUM Rev)
+        # net the elasticity of a particular reaction across taxa affected by the probiotic:
+        prod = df[df["direction"] == "forward"]
+        cons = df[df["direction"] == "reverse"]
 
-        grouped_df.rename(sample_name, inplace=True)
-        all_samples = pd.concat([all_samples, grouped_df], sort=True, axis=1)
+        net_prod = prod.groupby(["reaction"]).elasticity.sum()
+        net_cons = cons.groupby(["reaction"]).elasticity.sum()
+
+        net_elast = net_prod.subtract(net_cons, fill_value = 0) # calculates "net_prod - net_cons", considering missing values as zeros.
+
+        net_elast.rename(sample_name, inplace=True)
+        all_samples = pd.concat([all_samples, net_elast], sort=True, axis=1)
 
 
 
