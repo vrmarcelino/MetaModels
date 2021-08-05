@@ -55,6 +55,7 @@ def calc_donor_links (sampleX_df, sample_name, health_status):
 # returns a dataframe with the info required for statistical analyses
     df = pd.DataFrame()
     metab_centrality = calc_met_centrality(sampleX_df)
+    count_bins = 0
 
     for index, row in sampleX_df.iterrows():
         binID = row['compartment']
@@ -67,9 +68,14 @@ def calc_donor_links (sampleX_df, sample_name, health_status):
                 if flux > 0: #check if metabolite is exported (positive flux) by this bin
                     count_donor_links += 1
                     calc_bin_centrality.append(metab_centrality[met])
+
+        # calculate bin centrality and number of bins:
         bin_centrality = sum(calc_bin_centrality)
+        count_bins += 1
         new_row = [[sample_name, binID,count_donor_links,bin_centrality, health_status]]
+
         df = df.append(new_row)
+    df['n_bins'] = count_bins
     return (df)
 
 
@@ -98,7 +104,7 @@ for sample,value in meta_dic.items():
     result_df = result_df.append(sampleX_links)
 
 # rename columns
-result_df.columns = ["sample", "binID", "n_donor_links","bin_centrality","HD"]
+result_df.columns = ["sample", "binID", "n_donor_links","bin_centrality","HD","n_bins"]
 
 # calculate 'donor score' (n donor links X bin centrality)
 result_df['donor_score'] = result_df['n_donor_links'] * result_df['bin_centrality']
