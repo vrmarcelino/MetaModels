@@ -70,7 +70,7 @@ with open(in_fasta) as genome:
                 binID = ctg2bin[contig_full_name]
                 tax = bin2tax[binID]
                 contigID = contig_full_name.split("-")[0]
-                new_header = binID + "|" + contigID + "|" + tax
+                new_header = binID + "|" + contigID + "|" + tax + "\n"
                 ctgs_renamed += 1
 
                 if ctgs == 1:  # does not need a new line in the beginning of the file
