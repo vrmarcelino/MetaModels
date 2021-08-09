@@ -10,7 +10,7 @@ Created on 16/3/21
 import pandas as pd
 
 gtdb_res="gtdb_bac_and_arch.tsv"
-checkm_res="checkm.results.high_quality.txt"
+checkm_res="checkm.results.high_quality.tsv"
 
 
 # make it a pandas df, then use groupby to get the more complete ones....
@@ -28,8 +28,8 @@ with open(checkm_res) as c:
 df.to_csv("all_bins_with_compl.csv")
 
 
-# group by Classification:
-grouped_df = df.sort_values('Completeness', ascending=False).drop_duplicates(['Classification'])
+# group by Classification (note - classification with captal "C" in older versions of gtdbtk)
+grouped_df = df.sort_values('Completeness', ascending=False).drop_duplicates(['classification'])
 
 # save to file:
 grouped_df.to_csv("HQ_bins_with_compl.csv")
