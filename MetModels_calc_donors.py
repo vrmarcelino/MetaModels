@@ -32,6 +32,7 @@ out_file = args.output
 
 # min_fluxes_fp = "0_input/mininal_fluxes_exchange_merged.csv"
 # metadata_fp = "0_input/metadata_diseased_healthy_tests.csv"
+# out_file = "Donor_links.csv"
 
 ################################################
 ################  Functions     ################
@@ -60,19 +61,24 @@ def calc_donor_links (sampleX_df, sample_name, health_status):
     for index, row in sampleX_df.iterrows():
         binID = row['compartment']
         count_donor_links = 0
-        calc_bin_centrality = []
+        calc_bin_centrality = [] # sum of links
+        calc_weighted_bin_centrality = [] # sum of links multiplied by flux
         #count donor links:
         for met in row.index:
-            if met in metab_centrality.keys(): # check if it is a consumable metabolite
+            if met in metab_centrality.keys(): # check if metabolite is consumed by other species
                 flux = row[met]
                 if flux > 0: #check if metabolite is exported (positive flux) by this bin
                     count_donor_links += 1
                     calc_bin_centrality.append(metab_centrality[met])
 
+                    weighted_centrality = metab_centrality[met] * flux
+                    calc_weighted_bin_centrality.append(weighted_centrality)
+
         # calculate bin centrality and number of bins:
         bin_centrality = sum(calc_bin_centrality)
+        weighted_bin_centrality = sum(calc_weighted_bin_centrality)
         count_bins += 1
-        new_row = [[sample_name, binID,count_donor_links,bin_centrality, health_status]]
+        new_row = [[sample_name, binID,count_donor_links,bin_centrality, weighted_bin_centrality, health_status]]
 
         df = df.append(new_row)
     df['n_bins'] = count_bins
@@ -94,6 +100,7 @@ meta_dic = pd.Series(metadata.HD.values,index=metadata.Sample).to_dict()
 result_df = pd.DataFrame()
 
 ## loop trough fluxes dataframe (via dict), subseting one sample for processing at a time:
+# slow - took 30sec for 42 samples
 for sample,value in meta_dic.items():
 
     wanted_rows = df_fluxes_all.loc[df_fluxes_all['sample'] == sample]
@@ -104,11 +111,11 @@ for sample,value in meta_dic.items():
     result_df = result_df.append(sampleX_links)
 
 # rename columns
-result_df.columns = ["sample", "binID", "n_donor_links","bin_centrality","HD","n_bins"]
+result_df.columns = ["sample", "binID", "n_donor_links","bin_centrality","weighted_bin_centrality","HD","n_bins"]
 
 # calculate 'donor score' (n donor links X bin centrality)
 result_df['donor_score'] = result_df['n_donor_links'] * result_df['bin_centrality']
-
+result_df['wighted_donor_score'] = result_df['n_donor_links'] * result_df['weighted_bin_centrality'] # taking into acocunt export fluxes
 
 result_df.to_csv(out_file, index=False)
 
