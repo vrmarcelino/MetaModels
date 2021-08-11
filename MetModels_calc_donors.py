@@ -115,7 +115,7 @@ result_df.columns = ["sample", "binID", "n_donor_links","bin_centrality","weight
 
 # calculate 'donor score' (n donor links X bin centrality)
 result_df['donor_score'] = result_df['n_donor_links'] * result_df['bin_centrality']
-result_df['wighted_donor_score'] = result_df['n_donor_links'] * result_df['weighted_bin_centrality'] # taking into acocunt export fluxes
+result_df['weighted_donor_score'] = result_df['n_donor_links'] * result_df['weighted_bin_centrality'] # taking into acocunt export fluxes
 
 result_df.to_csv(out_file, index=False)
 
