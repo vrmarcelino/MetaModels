@@ -25,10 +25,10 @@ The [MICOM_Snakefile.py](https://github.com/vrmarcelino/MetaModels/tree/main/Sna
 
 Rule "build_community" calls the [MICOM_build_comm_models.py](https://github.com/vrmarcelino/MetaModels/blob/main/MICOM_build_comm_models.py) script. This script will, for each sample:
 
-1: build community:
+1.1. Build community:
 `com = Community(mag_tb)`
 
-2. Add media (western diet), to the community file, after diluting some nutrients to account for absorption in the intestine:
+1.2. Add media (western diet), to the community file, after diluting some nutrients to account for absorption in the intestine:
 
 ```
 # check if the names match & add to the community object:
@@ -47,10 +47,69 @@ diet = med.flux * med.dilution # dilute nutrients absorbed in the small intestin
 com.medium = diet
 ```
 
-Then saves this community to file in pickle format.
+1.3. saves this community to file, in pickle format.
 
 
-#### 2. Build community models
+#### 2. Cooperative tradeoffs - calculate metabolic exchanges
+
+The script [MICOM_coop_tradeoff.py](https://github.com/vrmarcelino/MetaModels/blob/main/MICOM_coop_tradeoff.py) optimizes the cooperative tradeoff, first using the western media for upper boundaries, then using the minimal media to get the metabolic exchanges. This script was largely based from the code developed for the MICOM paper:
+
+Each sample will run thought the function:
+def media_and_gcs(sam):
+
+```
+    com = load_pickle(pickles_path +"/"+ sam)
+
+    # Get growth rates
+    try:
+        sol = com.cooperative_tradeoff(fraction=trade_off)
+        rates = sol.members["growth_rate"].copy()
+        rates["community"] = sol.growth_rate
+        rates.name = sam
+    except Exception:
+        logger.warning("Could not solve cooperative tradeoff for %s." % sam)
+        return None
+
+    # Get the minimal medium
+    med = minimal_medium(com, 0.95 * sol.growth_rate, exports=True)
+    med.name = sam
+
+    # Apply medium and reoptimize
+    com.medium = med[med > 0]
+    sol = com.cooperative_tradeoff(fraction=0.5, fluxes=True, pfba=False) # uses the 'classic' FBA instead of the parsimonious FBA
+    fluxes = sol.fluxes
+    fluxes["sample"] = sam
+    return {"medium": med, "gcs": rates, "fluxes": fluxes}
+```
+
+This will generate growth rates, media (file minimal_imports_xx) and fluxes (minimal_fluxes_all_).
+From the flux output, we extracted the exchange_reactions with teh filtering:
+
+```
+ex_flux = fluxes.filter(regex='^EX_') # get only exchanges (starts with 'EX_')
+ex_flux = ex_flux.filter(regex='e$') # remove media (media ends with 'e_m', so I want the ones that end with 'e' only)
+ex_flux = ex_flux.fillna(0) #fill NANs with zeros
+
+ex_flux = ex_flux.loc[:, (ex_flux != 0).any(axis=0)] #remove columns with all zeros
+ex_flux['sample'] = fluxes['sample']
+ex_flux = ex_flux.drop(index='medium') # remove medium
+```
+And save it as 'minimal_fluxes_exchange_xxx' file (one per sample)
+
+
+### Questions / points for discussion:
+1. Media (in build_community and tradeoffs)
+2. Exchange reactions: 
+	Drop medium or meaningful info?
+	com.cooperative_tradeoff -> seems less subjective to errors ("solver encountered an error infeasible") than grow workflow?
+	Adjust for spp. abundance.
+
+
+### Post-processing:
+Merge exchange tables for all samples into a single csv file with [MetModels_merge_exchange_tables.py](https://github.com/vrmarcelino/MetaModels/blob/main/MetModels_merge_exchange_tables.py)
+
+
+
 
 
 

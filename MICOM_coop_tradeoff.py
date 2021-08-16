@@ -4,8 +4,7 @@
 Script to extract minimal growth media and optimize the cooperative tradeoff
 Run this after MICOM_build_comm_models.py
 Created on 30/3/21
-edited: 19/05/21
-@author: V.R.Marcelino
+edited: 16/08/21
 
 Script adapted from C. Diener's scripts:
 https://github.com/micom-dev/paper
@@ -68,7 +67,6 @@ else:
 ## make out dir
 if not os.path.exists(out_dir):
     os.mkdir(out_dir)
-
 
 
 ## function that optimizes the cooperative tradeoff, first using the western media for upper boundaries,
