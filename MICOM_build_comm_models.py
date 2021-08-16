@@ -3,7 +3,7 @@
 """
 Script to run MICOM and build community models.
 Also adds a media to the community and saves it as a pickle file.
-Using here the Western Diet csv file, formated to work with carveme the MICOM website,
+Using here the Western Diet csv file, formated to work with carveme, from the MICOM website (thanks Chris!)
 which also includes the dilution factors that lower import flux bounds for metabolites that are commonly
 absorbed in the small intestine
 
@@ -83,7 +83,7 @@ diet = med.flux * med.dilution # dilute nutrients absorbed in the small intestin
 com.medium = diet
 
 
-# save this community to file (Can I save one pickle file per GEM?)
+# save this community to file 
 comm_fp = comm_folder + "/" + sample + ".pickle"
 com.to_pickle(comm_fp)
 
