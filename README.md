@@ -3,8 +3,9 @@ Scripts to analyse metagenome-wide metabolic models
 
 
 ### Data mining:
-Train dataset: 1143 samples. Including 608 healthy and 535 diseased samples (running)
-Test dataset: 554 samples. Including 280 healthy and 274 diseased samples (used for prelim results)
+Train dataset: 1143 samples. Including 608 healthy and 535 diseased samples (running).
+
+Test dataset: 554 samples. Including 280 healthy and 274 diseased samples (used for preliminary results).
 
 ### Initial workflow:
 Assembly (Megahit), Binning (VAMB), QC (CheckM), identification (GTDBtk), select one MAG per species, calculate bin abundances across samples.
@@ -115,6 +116,4 @@ Note - spp abundance not taken into consideration here either, at least not yet.
 	Drop medium or meaningful info?
 	com.cooperative_tradeoff -> seems less subjective to errors ("solver encountered an error infeasible") than grow workflow?
 3. Adjust for spp. abundances
-
-
 
