@@ -97,19 +97,24 @@ ex_flux = ex_flux.drop(index='medium') # remove medium
 And save it as 'minimal_fluxes_exchange_xxx' file (one per sample)
 
 
+### Post-processing:
+Merge exchange tables for all samples into a single csv file with [MetModels_merge_exchange_tables.py](https://github.com/vrmarcelino/MetaModels/blob/main/MetModels_merge_exchange_tables.py)
+
+The output of this file can be used to calculate interaction networks (where nodes are species and/or metabolites, and edges represent the flux of the metabolic exchanges).
+Note - spp abundance not taken into consideration so far (except when building the community).
+
+
+Summarize net production and consumption of specific metabolites per sample [R script summarize_exchanges.R](https://github.com/vrmarcelino/MetaModels/blob/main/summarize_exchanges.R). This script will, for each sample, sum the total production of each metabolite, and subtract the consumption, in order to calculate the net exchnage of metabolites per sample. The output is a csv table with one sample per row and one metabolite per column (negative indicating net consumption and positive indicating net production).
+
+Note - spp abundance not taken into consideration here either, at least not yet.
+
+
 ### Questions / points for discussion:
 1. Media (in build_community and tradeoffs)
 2. Exchange reactions: 
 	Drop medium or meaningful info?
 	com.cooperative_tradeoff -> seems less subjective to errors ("solver encountered an error infeasible") than grow workflow?
-	Adjust for spp. abundance.
-
-
-### Post-processing:
-Merge exchange tables for all samples into a single csv file with [MetModels_merge_exchange_tables.py](https://github.com/vrmarcelino/MetaModels/blob/main/MetModels_merge_exchange_tables.py)
-
-
-
+3. Adjust for spp. abundances
 
 
 
