@@ -19,12 +19,12 @@ For gap filling, we used the M8 media, which was based on Tramontano et al 2018 
 ### MICOM:
 
 After creating a manifest (one per sample), containing MAGs abundance and the path to GEMs, we used snakemake to run MICOM on multiple samples
-The MICOM_Snakefile.py has two rules: "build_community" and "tradeoff", explained in more detail below:
+The [MICOM_Snakefile.py](https://github.com/vrmarcelino/MetaModels/tree/main/Snakemake/5_MICOM) has two rules: "build_community" and "tradeoff", explained in more detail below:
 
 #### 1. Build community models
 
-Rule "build_community" calls the "MICOM_build_comm_models.py" script.
-This script will, for each sample:
+Rule "build_community" calls the [MICOM_build_comm_models.py](https://github.com/vrmarcelino/MetaModels/blob/main/MICOM_build_comm_models.py) script. This script will, for each sample:
+
 1: build community:
 `com = Community(mag_tb)`
 
