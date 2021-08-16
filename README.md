@@ -53,12 +53,12 @@ com.medium = diet
 
 #### 2. Cooperative tradeoffs - calculate metabolic exchanges
 
-The script [MICOM_coop_tradeoff.py](https://github.com/vrmarcelino/MetaModels/blob/main/MICOM_coop_tradeoff.py) optimizes the cooperative tradeoff, first using the western media for upper boundaries, then using the minimal media to get the metabolic exchanges. This script was largely based from the code developed for the MICOM paper:
+The script [MICOM_coop_tradeoff.py](https://github.com/vrmarcelino/MetaModels/blob/main/MICOM_coop_tradeoff.py) optimizes the cooperative tradeoff, first using the western media for upper boundaries, then using the minimal media to get the metabolic exchanges. This script was largely based on the code developed for the MICOM paper:
 
 Each sample will run thought the function:
-def media_and_gcs(sam):
 
 ```
+def media_and_gcs(sam):
     com = load_pickle(pickles_path +"/"+ sam)
 
     # Get growth rates
@@ -84,7 +84,8 @@ def media_and_gcs(sam):
 ```
 
 This will generate growth rates, media (file minimal_imports_xx) and fluxes (minimal_fluxes_all_).
-From the flux output, we extracted the exchange_reactions with teh filtering:
+
+From the flux output, we extracted the exchange_reactions with the filtering:
 
 ```
 ex_flux = fluxes.filter(regex='^EX_') # get only exchanges (starts with 'EX_')
@@ -99,21 +100,26 @@ And save it as 'minimal_fluxes_exchange_xxx' file (one per sample)
 
 
 ### Post-processing:
-Merge exchange tables for all samples into a single csv file with [MetModels_merge_exchange_tables.py](https://github.com/vrmarcelino/MetaModels/blob/main/MetModels_merge_exchange_tables.py)
+
+1. Merge exchange tables for all samples into a single csv file with [MetModels_merge_exchange_tables.py](https://github.com/vrmarcelino/MetaModels/blob/main/MetModels_merge_exchange_tables.py)
 
 The output of this file can be used to calculate interaction networks (where nodes are species and/or metabolites, and edges represent the flux of the metabolic exchanges).
+
 Note - spp abundance not taken into consideration so far (except when building the community).
 
 
-Summarize net production and consumption of specific metabolites per sample [R script summarize_exchanges.R](https://github.com/vrmarcelino/MetaModels/blob/main/summarize_exchanges.R). This script will, for each sample, sum the total production of each metabolite, and subtract the consumption, in order to calculate the net exchnage of metabolites per sample. The output is a csv table with one sample per row and one metabolite per column (negative indicating net consumption and positive indicating net production).
+2. Summarize net production and consumption of specific metabolites per sample with [R script summarize_exchanges.R](https://github.com/vrmarcelino/MetaModels/blob/main/summarize_exchanges.R). This script will, for each sample, sum the total production of each metabolite, and subtract the consumption, in order to calculate the net exchange of metabolites per sample. The output is a csv table with one sample per row and one metabolite per column (negative indicating net consumption and positive indicating net production).
 
 Note - spp abundance not taken into consideration here either, at least not yet.
 
 
 ### Questions / points for discussion:
-1. Media (in build_community and tradeoffs)
-2. Exchange reactions: 
+1. Media (in carveme, build_community and tradeoffs)
+2. Exchange reactions:
+
 	Drop medium or meaningful info?
+
 	com.cooperative_tradeoff -> seems less subjective to errors ("solver encountered an error infeasible") than grow workflow?
+    
 3. Adjust for spp. abundances
 
