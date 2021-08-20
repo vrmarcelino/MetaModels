@@ -71,6 +71,7 @@ if not os.path.exists(out_dir):
 
 ## function that optimizes the cooperative tradeoff, first using the western media for upper boundaries,
 ## then using the minimal media to get the metabolic exchanges
+## Note - parsimonious FBA has been recently recommended - see note at the end of the script
 def media_and_gcs(sam):
 
     com = load_pickle(pickles_path +"/"+ sam)
@@ -141,6 +142,20 @@ ex_flux = ex_flux.drop(index='medium') # remove medium
 ex_flux.to_csv(ex_fluxes_fp)
 
 print ("\nDONE! Exchange fluxes saved to %s\n"%(ex_fluxes_fp))
+
+##### Note - to run the parsimonious FBA, there is no need to get the minimal media. the function should look like:
+#def media_and_gcs(sam):
+#
+#    com = load_pickle(pickles_path +"/"+ sam)
+#
+#    com.medium = med[med > 0]
+#    sol = com.cooperative_tradeoff(fraction=0.5, fluxes=True, pfba=True) # uses the parsimonious FBA
+#    fluxes = sol.fluxes
+#    fluxes["sample"] = sam
+#    return {"medium": med, "gcs": rates, "fluxes": fluxes}
+
+
+
 
 
 
