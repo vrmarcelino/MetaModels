@@ -77,8 +77,6 @@ medium['reaction'].isin(ex_ids).sum() # must be a large number of reactions (>10
 med = medium[medium.index.isin(ex_ids)] # exclude medium items not used by the microbiome
 
 diet = med.flux * med.dilution # dilute nutrients absorbed in the small intestine
-
-# Note that this only affects the com.cooperative_tradeoff (the grow workflow is not affected)
 com.medium = diet
 
 # save this community to file
