@@ -40,10 +40,10 @@ sample = args.sample
 w_media = args.media
 
 
-in_folder = '0_MAGs_tables'
-comm_folder = '1_communities'
-sample = 'ERR589448'
-w_media = '0_diet/western_diet_gut_carveme.qza'
+#in_folder = '0_MAGs_tables'
+#comm_folder = '1_communities'
+#sample = 'ERR589448'
+#w_media = '0_diet/western_diet_gut_carveme.qza'
 
 if not os.path.exists(comm_folder):
     os.mkdir(comm_folder)
