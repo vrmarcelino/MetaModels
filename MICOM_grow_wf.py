@@ -57,6 +57,9 @@ med = pd.DataFrame(com.medium.items(), columns=['reaction', 'flux'])
 res = grow(manifest, pickles_path, medium=med, tradeoff=trade_off, threads=th, strategy="pFBA")
 res.exchanges
 
+## add sample name:
+res.exchanges['sample_id'] = sample
+
 ## save to file:
 out_fp = "exchanges_grow_" + sample + ".csv"
 outfile=open(out_fp,"w")
