@@ -22,6 +22,7 @@ parser.add_argument('-c', '--comm_fp', help="""Path to folder containing communi
 parser.add_argument('-s', '--sample', help="""sample, or community type, to be analysed""", required=True)
 parser.add_argument('-t', '--trade_off', help="""trade_off to use in the grow workflow. Default here is 0.5, but the original default is 1""", required=False, default=0.5)
 parser.add_argument('-th', '--threads', help="""threads to use""", required=False, default=1)
+parser.add_argument('-o', '--out_folder', help="""output_folder. Default = 2_Exchanges""", required=False, default="2_TradeOffs")
 
 
 args = parser.parse_args()
@@ -31,6 +32,7 @@ pickles_path = args.comm_fp
 sample = args.sample
 trade_off = args.trade_off
 th = int(args.threads)
+out_dir=args.out_folder
 
 #pickles_path = '1_communities'
 #sample = 'ERR589448'
@@ -61,7 +63,7 @@ res.exchanges
 res.exchanges['sample_id'] = sample
 
 ## save to file:
-out_fp = "exchanges_grow_" + sample + ".csv"
+out_fp = out_dir + "exchanges_grow_" + sample + ".csv"
 outfile=open(out_fp,"w")
 res.exchanges.to_csv(outfile)
 outfile.close()

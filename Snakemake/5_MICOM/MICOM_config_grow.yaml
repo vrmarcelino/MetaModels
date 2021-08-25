@@ -1,0 +1,15 @@
+path:
+    root: /home/vmar0011/scratch/05_Metabolic_Networks/Test_dataset/3_Models/5_MICOM
+folder:
+    logs: z_snakemake_logs
+    tables_fp: 0_MAGs_tables
+    pickles: 1_communities
+    tradeoffs: 2_exchanges
+cores:
+    build_comm: 1
+    tradeoff: 2
+partition:
+    build_comm: short
+    tradeoff: short,comp
+media_db:
+    metagem_media: 0_diet/western_diet_gut_carveme.qza
