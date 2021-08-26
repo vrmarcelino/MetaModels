@@ -63,7 +63,7 @@ res.exchanges
 res.exchanges['sample_id'] = sample
 
 ## save to file:
-out_fp = out_dir + "exchanges_grow_" + sample + ".csv"
+out_fp = out_dir +"/"+ "exchanges_grow_" + sample + ".csv"
 outfile=open(out_fp,"w")
 res.exchanges.to_csv(outfile)
 outfile.close()

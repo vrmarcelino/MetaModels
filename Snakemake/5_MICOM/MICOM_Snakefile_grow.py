@@ -40,7 +40,7 @@ rule grow_wf:
     input:
         config["path"]["root"]+"/"+config["folder"]["pickles"]+"/{sample}.pickle"
     params:
-        smpl = "{sample}.pickle",
+        smpl = "{sample}",
         out_folder = config["path"]["root"]+"/"+config["folder"]["exchanges"],
         pickles_fp = config["path"]["root"]+"/"+config["folder"]["pickles"]
     output:
