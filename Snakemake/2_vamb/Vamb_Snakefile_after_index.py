@@ -2,7 +2,7 @@
 
 # set configurations
 INDEX_SIZE = config.get("index_size", "4G")
-MM_MEM = config.get("minimap_mem", 35000)
+MM_MEM = config.get("minimap_mem", 32000)
 MM_PPN = config.get("minimap_ppn", 10)
 VAMB_MEM = config.get("vamb_mem", 20000)
 VAMB_PPN = config.get("vamb_ppn", 12)
@@ -44,37 +44,6 @@ rule all:
         "1_jgi_matrix/jgi.abundance.dat",
         "2_vamb/clusters.tsv"
         
-rule cat_contigs:
-    input:
-        contigs_list
-    output:
-        "contigs.flt.fna.gz"
-    resources:
-        time_min=480, mem_mb=10000, cpus=1
-    threads:
-        int(1)
-    log:
-        "log/contigs/catcontigs.log"
-    shell:
-        "concatenate.py {output} {input} -m 2000"
-
-rule index:
-    input:
-        contigs = "contigs.flt.fna.gz"
-    output:
-        mmi = "contigs.flt.mmi"
-    resources:
-        time_min=1440, mem_mb=99000, cpus=8
-    threads:
-        int(1)
-    log:
-        "log/contigs/index.log"
-    benchmark:
-        "benchmarks/index/"+"index.benchmark.txt"
-    shell:
-        "minimap2 -I {INDEX_SIZE} -d {output} {input} 2> {log}"
-
-
 rule dict:
     input:
         contigs = "contigs.flt.fna.gz"
@@ -89,6 +58,7 @@ rule dict:
     shell:
         "samtools dict {input} | cut -f1-3 > {output} 2> {log}"
 
+#used max_time 240 (4hs) for all samples, repeat for the ones that fail
 rule minimap:
     input:
         fq = lambda wildcards: sample2path[wildcards.sample],
@@ -97,7 +67,7 @@ rule minimap:
     output:
         bam = temp("mapped/{sample}.bam")
     resources:
-        time_min=720, mem_mb=MM_MEM, cpus=VAMB_PPN
+        time_min=240, mem_mb=MM_MEM, cpus=MM_PPN
     threads:
         int(MM_PPN)
     log:
@@ -109,7 +79,7 @@ rule minimap:
     shell:
         '''
         echo 'running minimap'
-        minimap2 -t {threads} -ax sr {input.mmi} {input.fq} | grep -v "^@" | cat {input.dict} - | samtools view -F 3584 -b - > {output.bam} 2>{log}'''
+        minimap2 -t {threads} -ax sr {input.mmi} {input.fq} | grep -v "^@" | cat {input.dict} - | samtools view --threads 16 -F 3584 -b - > {output.bam} 2>{log}'''
 
 rule sort:
     input:
@@ -117,7 +87,7 @@ rule sort:
     output:
         temp("mapped/{sample}.sort.bam")
     resources:
-        time_min=720, mem_mb=24000, cpus=2
+        time_min=240, mem_mb=30000, cpus=3
     params:
         prefix="mapped/tmp.{sample}"
     threads:
@@ -129,7 +99,12 @@ rule sort:
     conda:
         "envs/samtools.yaml"
     shell:
-        "samtools sort {input} -T {params.prefix} --threads 1 -m 3G -o {output} 2>{log}"
+        """
+        #note1: --threads is n of additional threads to use (default is zero).
+        #note2: -m sets maximum memory per thread.
+
+        samtools sort {input} -T {params.prefix} --threads 2 -m 8G -o {output} 2>{log}
+        """
 
 rule jgi:
     input:
@@ -169,7 +144,7 @@ rule cut_column4to5:
     output:
         "1_jgi/{sample}.cut.jgi"
     resources:
-        time_min=240, mem_mb=10000, cpus=1
+        time_min=60, mem_mb=1000, cpus=1
     log:
         "log/jgi/{sample}.cut.log"
     benchmark:
@@ -216,3 +191,5 @@ rule vamb:
         "{VAMB_PRELOAD}"
         "rm -rf 2_vamb;"
         "vamb --outdir 2_vamb --fasta {input.contigs} --jgi {input.jgi} -p {VAMB_threads} {VAMB_PARAMS} 2>{log}"
+
+
