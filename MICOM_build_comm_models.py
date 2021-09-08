@@ -3,9 +3,7 @@
 """
 Script to run MICOM and build community models.
 Also adds a media to the community and saves it as a pickle file.
-Using here the Western Diet csv file, formated to work with carveme the MICOM website,
-which also includes the dilution factors that lower import flux bounds for metabolites that are commonly
-absorbed in the small intestine
+Using here the Western Diet csv file, formated to work with carveme, from the MICOM website,
 
 Compatible with MICOM v.0.25.1
 
@@ -76,8 +74,7 @@ ex_ids = [r.id for r in com.exchanges]
 medium['reaction'].isin(ex_ids).sum() # must be a large number of reactions (>100)
 med = medium[medium.index.isin(ex_ids)] # exclude medium items not used by the microbiome
 
-diet = med.flux * med.dilution # dilute nutrients absorbed in the small intestine
-com.medium = diet
+com.medium = med.flux
 
 # save this community to file
 comm_fp = comm_folder + "/" + sample + ".pickle"
