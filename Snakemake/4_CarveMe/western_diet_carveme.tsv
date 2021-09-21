@@ -50,7 +50,6 @@ western_diet_gut	western_diet_gut	o2	o2
 western_diet_gut	western_diet_gut	orn	orn
 western_diet_gut	western_diet_gut	phe__L	phe__L
 western_diet_gut	western_diet_gut	pheme	pheme
-western_diet_gut	western_diet_gut	pheme	pheme
 western_diet_gut	western_diet_gut	pi	pi
 western_diet_gut	western_diet_gut	pro__L	pro__L
 western_diet_gut	western_diet_gut	ptrc	ptrc
@@ -62,7 +61,6 @@ western_diet_gut	western_diet_gut	ribflv	ribflv
 western_diet_gut	western_diet_gut	ser__L	ser__L
 western_diet_gut	western_diet_gut	so4	so4
 western_diet_gut	western_diet_gut	sucr	sucr
-western_diet_gut	western_diet_gut	thm	thm
 western_diet_gut	western_diet_gut	thm	thm
 western_diet_gut	western_diet_gut	thr__L	thr__L
 western_diet_gut	western_diet_gut	tre	tre
@@ -81,7 +79,6 @@ western_diet_gut	western_diet_gut	dad_2	dad_2
 western_diet_gut	western_diet_gut	dgsn	dgsn
 western_diet_gut	western_diet_gut	fum	fum
 western_diet_gut	western_diet_gut	ocdca	ocdca
-western_diet_gut	western_diet_gut	spmd	spmd
 western_diet_gut	western_diet_gut	spmd	spmd
 western_diet_gut	western_diet_gut	thymd	thymd
 western_diet_gut	western_diet_gut	ttdca	ttdca
@@ -122,3 +119,9 @@ western_diet_gut	western_diet_gut	lmn30	lmn30
 western_diet_gut	western_diet_gut	acmana	acmana
 western_diet_gut	western_diet_gut	starch1200	starch1200
 western_diet_gut	western_diet_gut	fald	fald
+western_diet_gut	western_diet_gut	starch	starch
+western_diet_gut	western_diet_gut	amylose	amylose
+western_diet_gut	western_diet_gut	glc__D	glc__D
+western_diet_gut	western_diet_gut	pect	pect
+western_diet_gut	western_diet_gut	xylan4	xylan4
+western_diet_gut	western_diet_gut	xylan8	xylan8
