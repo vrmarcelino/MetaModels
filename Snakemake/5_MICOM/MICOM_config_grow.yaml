@@ -1,5 +1,5 @@
 path:
-    root: /home/vmar0011/scratch/05_Metabolic_Networks/Test_dataset/3_Models/5_MICOM
+    root: /home/vmar0011/scratch/05_Metabolic_Networks/Merged_dataset/3_Models/5_MICOM
 folder:
     logs: z_snakemake_logs
     tables_fp: 0_MAGs_tables
@@ -12,4 +12,4 @@ partition:
     build_comm: short,comp
     exchanges: short,comp
 media_db:
-    metagem_media: 0_diet/western_diet_gut_carveme.qza
+    metagem_media: 0_diet/carveme_skeleton.csv

@@ -8,7 +8,7 @@ Using here the Western Diet csv file, formated to work with carveme, from the MI
 Compatible with MICOM v.0.25.1
 
 Created on 06/05/21
-Updated 25/08/21
+Updated 21/09/21
 @author: V.R.Marcelino
 """
 import os
@@ -25,7 +25,7 @@ folder containing MAGs (or community) tables""", required=True)
 parser.add_argument('-f', '--tables_fp', help="""Path to folder containing MAGs (or community) tables""", required=False, default="0_MAGs_tables")
 parser.add_argument('-p', '--pickles', help="""Path to folders to store the community models""", required=False, default="1_communities")
 
-parser.add_argument('-m', '--media', help="path to the media file", required=False, default="0_diet/western_diet_gut_carveme.qza")
+parser.add_argument('-m', '--media', help="path to the media file", required=False, default="0_diet/carveme_skeleton.csv")
 
 
 args = parser.parse_args()
@@ -40,8 +40,8 @@ w_media = args.media
 
 #in_folder = '0_MAGs_tables'
 #comm_folder = '1_communities'
-#sample = 'ERR589448'
-#w_media = '0_diet/western_diet_gut_carveme.qza'
+#sample = 'SRR6784563'
+#w_media = '0_diet/carveme_skeleton.csv'
 
 if not os.path.exists(comm_folder):
     os.mkdir(comm_folder)
@@ -52,8 +52,8 @@ fp = in_folder + "/" + sample + ".csv"
 mag_tb = pd.read_csv(fp)
 
 ### import and parse media - western diet
-medium = load_qiime_medium(w_media)
-
+medium = pd.read_csv(w_media)
+medium.index = medium.reaction
 
 ##############################
 # BUILD COMMUNITY MODELS
@@ -74,7 +74,10 @@ ex_ids = [r.id for r in com.exchanges]
 medium['reaction'].isin(ex_ids).sum() # must be a large number of reactions (>100)
 med = medium[medium.index.isin(ex_ids)] # exclude medium items not used by the microbiome
 
-com.medium = med.flux
+# the x 100 compensates for the fact CARVEME covers very little carbon sources, especially complex carbohydrates.
+# So this is require to get the community growing.
+# divide fluxes by 100 later
+com.medium = med.flux * 100
 
 # save this community to file
 comm_fp = comm_folder + "/" + sample + ".pickle"

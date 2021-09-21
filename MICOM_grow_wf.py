@@ -35,7 +35,7 @@ th = int(args.threads)
 out_dir=args.out_folder
 
 #pickles_path = '1_communities'
-#sample = 'ERR589448'
+#sample = 'SRR6784563'
 #trade_off = 0.5
 #th = 2
 
@@ -58,6 +58,9 @@ med = pd.DataFrame(com.medium.items(), columns=['reaction', 'flux'])
 # grow!! using parsimonious FBA
 res = grow(manifest, pickles_path, medium=med, tradeoff=trade_off, threads=th, strategy="pFBA")
 res.exchanges
+
+# divide fluxes by the 100 (added in the build_comm_models)
+res.exchanges['flux'] = res.exchanges['flux'] / 100
 
 ## add sample name:
 res.exchanges['sample_id'] = sample

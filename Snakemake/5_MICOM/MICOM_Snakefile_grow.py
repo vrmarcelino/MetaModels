@@ -23,7 +23,7 @@ rule build_community:
     output:
         config["path"]["root"]+"/"+config["folder"]["pickles"]+"/{sample}.pickle"
     resources:
-        time_min=60, mem_mb=8000, cpus=config["cores"]["build_comm"]
+        time_min=120, mem_mb=8000, cpus=config["cores"]["build_comm"]
     log:
         std_out = config["path"]["root"]+"/"+config["folder"]["logs"]+"/micom_build_comm/{sample}.log"
     benchmark:
@@ -46,7 +46,7 @@ rule grow_wf:
     output:
         config["path"]["root"]+"/"+config["folder"]["exchanges"]+"/exchanges_grow_{sample}.csv"
     resources:
-        time_min=60, mem_mb=12000, cpus=config["cores"]["exchanges"]
+        time_min=120, mem_mb=12000, cpus=config["cores"]["exchanges"]
     log:
         std_out = config["path"]["root"]+"/"+config["folder"]["logs"]+"/micom_grow/{sample}.log"
     benchmark:
