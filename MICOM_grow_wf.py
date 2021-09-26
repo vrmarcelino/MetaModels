@@ -55,12 +55,15 @@ manifest = pd.DataFrame({"sample_id": sample, "file": comm_filename}, index=[0])
 # Medium (western diet, after diluting nutrients absorbed in the small intestine)
 med = pd.DataFrame(com.medium.items(), columns=['reaction', 'flux'])
 
+# test increasing flux
+med['flux'] = med['flux'] * 6
+
 # grow!! using parsimonious FBA
 res = grow(manifest, pickles_path, medium=med, tradeoff=trade_off, threads=th, strategy="pFBA")
 res.exchanges
 
-# divide fluxes by the 100 (added in the build_comm_models)
-res.exchanges['flux'] = res.exchanges['flux'] / 100
+# divide fluxes by the 600 (100 added in the build_comm_models, multiplied by 6 here)
+res.exchanges['flux'] = res.exchanges['flux'] / 600
 
 ## add sample name:
 res.exchanges['sample_id'] = sample
@@ -72,3 +75,4 @@ res.exchanges.to_csv(outfile)
 outfile.close()
 
 print ("\nDONE!!\n")
+
