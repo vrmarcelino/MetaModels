@@ -68,13 +68,18 @@ exchanges_all = df_merged[df_merged.taxon != 'medium'] # remove medium
 exchanges_all = exchanges_all.drop(columns=['tolerance'])
 
 
+### Calculate weighted flux (flux * rel_abundance) - abs converts negative to positive values
+exchanges_all['flux_weighted'] = abs(exchanges_all['flux']) *  exchanges_all['abundance']
+
+
+
 ##################
 ## format edges ##
 ##################
 
 ### group dataframe by taxon, metabolite and direction, calculating average/sum...
 # note that abundance may vary for producers and consumers (depends on their mean abundance within producers/consumers)
-exchanges = exchanges_all.groupby(["taxon","metabolite","direction"]).agg({'abundance':['mean'],'flux':['mean', 'sum', 'count']})
+exchanges = exchanges_all.groupby(["taxon","metabolite","direction"]).agg({'abundance':['mean'],'flux':['mean', 'count'], 'flux_weighted':['sum']})
 exchanges.columns = ['_'.join(col) for col in exchanges.columns.values]
 exchanges.reset_index(level=('taxon','metabolite','direction'), inplace=True) # convert direction/taxon and metabolite into columns
 exchanges = exchanges.rename(columns={"flux_count": "occurrences"})
@@ -115,6 +120,8 @@ consumers_flux_mean = pd.Series(consumers.flux_mean.values,index=consumers.targe
 producers_occurrences = pd.Series(producers.occurrences.values,index=producers.source).to_dict()
 consumers_occurrences = pd.Series(consumers.occurrences.values,index=consumers.target).to_dict()
 
+producers_flux_weighted_sum = pd.Series(producers.flux_weighted_sum.values,index=producers.source).to_dict()
+consumers_flux_weighted_sum = pd.Series(consumers.flux_weighted_sum.values,index=consumers.target).to_dict()
 
 
 
@@ -138,17 +145,18 @@ for index, row in nodes.iterrows():
             nodes.at[index,'rel_abundance_mean'] = producers_abund[nodes.at[index, 'node']]
             nodes.at[index, 'flux_mean'] = producers_flux_mean[nodes.at[index, 'node']]
             nodes.at[index, 'occurrences'] = producers_occurrences[nodes.at[index, 'node']]
+            nodes.at[index, 'flux_weighted_sum'] = producers_flux_weighted_sum[nodes.at[index, 'node']]
         elif "_c" in row['node']:
             nodes.at[index, 'prod_cons'] = 'c'
             nodes.at[index, 'rel_abundance_mean'] = consumers_abund[nodes.at[index, 'node']]
             nodes.at[index, 'flux_mean'] = consumers_flux_mean[nodes.at[index, 'node']]
             nodes.at[index, 'occurrences'] = consumers_occurrences[nodes.at[index, 'node']]
+            nodes.at[index, 'flux_weighted_sum'] = consumers_flux_weighted_sum[nodes.at[index, 'node']]
         else:
             print ("\n\nCan't tell if this is a consumer or producer, check!\n\n")
 
 
 ## consider adding an extra column to flag species that are both producers and consumers
-
 
 # save to file:
 edges.to_csv(out_edges, index=False)
