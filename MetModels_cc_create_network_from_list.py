@@ -17,6 +17,7 @@ parser = ArgumentParser()
 parser.add_argument('-if', '--in_folder', help="""Path to the micom exchange results (e.g. 2_exchanges)""", required=True)
 parser.add_argument('-s', '--samples', help="""text file indicating the prefixes of the samples to be analysed """, required=True)
 parser.add_argument('-m', '--metabolite', help="""generate nodes/edges for this specific metabolite (e.g. h2s_e). Default = all""", required=False, default="all")
+parser.add_argument('-sp', '--spp_classifications', help="""Path to tab-sep file containing binID in one column and spp classification in teh other(e.g. wanted_spp_classification.tsv)""", required=True)
 
 parser.add_argument('-on', '--out_nodes', help="output file name for nodes", required=True)
 parser.add_argument('-oe', '--out_edges', help="output file name for edges", required=True)
@@ -28,13 +29,30 @@ in_samples = args.samples
 out_nodes = args.out_nodes
 out_edges = args.out_edges
 metabolite = args.metabolite
-
+sp_class = args.spp_classifications
 
 #in_folder = "2_exchanges"
 #in_samples = "wanted_prefix.txt"
 #out_nodes = "nodes.csv"
 #out_edges = "edges.csv"
 #metabolite = "h2s_e"
+#sp_class = "wanted_spp_classification.tsv"
+
+
+####################################
+### store bins2spp file into dict ###
+####################################
+
+bins2spp_dict = {}
+with open(sp_class) as f:
+  for line in f:
+    (binID, lineage)=line.split('\t')
+    binID = binID.replace('.',"_")
+    binID_produc = binID + "_p"
+    binID_consum = binID + "_c"
+    bins2spp_dict[binID_produc]=lineage
+    bins2spp_dict[binID_consum] = lineage
+
 
 ####################################
 ### merge wanted exchange tables ###
@@ -132,26 +150,33 @@ for index, row in nodes.iterrows():
     if "_e" in row['node']:
         nodes.at[index,'type'] = "metab"
         nodes.at[index,'type_numb'] = 1
+        nodes.at[index, 'lineage'] = 'metab'
         nodes.at[index, 'prod_cons'] = 'metab'
         nodes.at[index, 'rel_abundance_mean'] = 10 # random number!! - make it the largest ball!
         nodes.at[index, 'flux_mean'] = 10 # random number!! - make it the largest ball!
         nodes.at[index, 'occurrences'] = 10 # random number!! - make it the largest ball!
+        nodes.at[index, 'flux_weighted_sum'] = 10 # random number!! - make it the largest ball!
+
 
     else:
         nodes.at[index,'type'] = "mag"
         nodes.at[index,'type_numb'] = 0
+
+        bin_id = nodes.at[index, 'node']
+        nodes.at[index, 'lineage'] = bins2spp_dict[bin_id]
+
         if "_p" in row['node']:
             nodes.at[index, 'prod_cons'] = 'p'
-            nodes.at[index,'rel_abundance_mean'] = producers_abund[nodes.at[index, 'node']]
-            nodes.at[index, 'flux_mean'] = producers_flux_mean[nodes.at[index, 'node']]
-            nodes.at[index, 'occurrences'] = producers_occurrences[nodes.at[index, 'node']]
-            nodes.at[index, 'flux_weighted_sum'] = producers_flux_weighted_sum[nodes.at[index, 'node']]
+            nodes.at[index,'rel_abundance_mean'] = producers_abund[bin_id]
+            nodes.at[index, 'flux_mean'] = producers_flux_mean[bin_id]
+            nodes.at[index, 'occurrences'] = producers_occurrences[bin_id]
+            nodes.at[index, 'flux_weighted_sum'] = producers_flux_weighted_sum[bin_id]
         elif "_c" in row['node']:
             nodes.at[index, 'prod_cons'] = 'c'
-            nodes.at[index, 'rel_abundance_mean'] = consumers_abund[nodes.at[index, 'node']]
-            nodes.at[index, 'flux_mean'] = consumers_flux_mean[nodes.at[index, 'node']]
-            nodes.at[index, 'occurrences'] = consumers_occurrences[nodes.at[index, 'node']]
-            nodes.at[index, 'flux_weighted_sum'] = consumers_flux_weighted_sum[nodes.at[index, 'node']]
+            nodes.at[index, 'rel_abundance_mean'] = consumers_abund[bin_id]
+            nodes.at[index, 'flux_mean'] = consumers_flux_mean[bin_id]
+            nodes.at[index, 'occurrences'] = consumers_occurrences[bin_id]
+            nodes.at[index, 'flux_weighted_sum'] = consumers_flux_weighted_sum[bin_id]
         else:
             print ("\n\nCan't tell if this is a consumer or producer, check!\n\n")
 
