@@ -151,6 +151,7 @@ for index, row in nodes.iterrows():
         nodes.at[index,'type'] = "metab"
         nodes.at[index,'type_numb'] = 1
         nodes.at[index, 'lineage'] = 'metab'
+        nodes.at[index, 'species'] = 'metab'
         nodes.at[index, 'prod_cons'] = 'metab'
         nodes.at[index, 'rel_abundance_mean'] = 10 # random number!! - make it the largest ball!
         nodes.at[index, 'flux_mean'] = 10 # random number!! - make it the largest ball!
@@ -163,8 +164,8 @@ for index, row in nodes.iterrows():
         nodes.at[index,'type_numb'] = 0
 
         bin_id = nodes.at[index, 'node']
-        nodes.at[index, 'lineage'] = bins2spp_dict[bin_id]
-
+        nodes.at[index, 'lineage'] = bins2spp_dict[bin_id].strip()
+        nodes.at[index, 'species'] = bins2spp_dict[bin_id].split(';s__')[1].strip()
         if "_p" in row['node']:
             nodes.at[index, 'prod_cons'] = 'p'
             nodes.at[index,'rel_abundance_mean'] = producers_abund[bin_id]
@@ -179,7 +180,6 @@ for index, row in nodes.iterrows():
             nodes.at[index, 'flux_weighted_sum'] = consumers_flux_weighted_sum[bin_id]
         else:
             print ("\n\nCan't tell if this is a consumer or producer, check!\n\n")
-
 
 ## consider adding an extra column to flag species that are both producers and consumers
 
