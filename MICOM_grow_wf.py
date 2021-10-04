@@ -67,12 +67,22 @@ res.exchanges['flux'] = res.exchanges['flux'] / 600
 
 ## add sample name:
 res.exchanges['sample_id'] = sample
+res.growth_rates['sample_id'] = sample
 
 ## save to file:
-out_fp = out_dir +"/"+ "exchanges_grow_" + sample + ".csv"
-outfile=open(out_fp,"w")
-res.exchanges.to_csv(outfile)
+out_fp_exc = out_dir +"/"+ "exchanges_grow_" + sample + ".csv"
+outfile=open(out_fp_exc,"w")
+res.exchanges.to_csv(out_fp_exc)
 outfile.close()
+
+out_fp_grow = out_dir +"/"+ "growth_rates_" + sample + ".csv"
+outfile=open(out_fp_grow,"w")
+res.growth_rates.to_csv(out_fp_grow)
+outfile.close()
+
+
+
+
 
 print ("\nDONE!!\n")
 
