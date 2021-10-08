@@ -22,7 +22,7 @@ parser.add_argument('-f', '--folder_w_exchange_files', help="""Path to the folde
 parser.add_argument('-c', '--core', help="""Definition of core - min percentage of samples where the edge should be present to be considered core.
                     Default = 95""", required=False, default=95)
 parser.add_argument('-m', '--metadata', help="""Path to the metadata file""",required=True )
-parser.add_argument('-g', '--grouping_header', help="""category to analyse core exchanges, must be a header in the metadata file (health_status or HD)""",required=True)
+parser.add_argument('-g', '--grouping_header', help="""category to analyse core exchanges, must be a header in the metadata file (Diagnosis or HD)""",required=True)
 parser.add_argument('-o', '--output_core', help="""file to store the summary of core met exchanges. Default = summary_met_exchanges_core.csv""", required=False, default="summary_met_exchanges_core.csv")
 
 args = parser.parse_args()
