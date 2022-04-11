@@ -16,42 +16,26 @@ import pandas as pd
 
 parser = ArgumentParser()
 parser.add_argument('-f', '--folder_w_exchange_files', help="""Path to the folder containing exchange files produced by MICOM""", required=True)
-parser.add_argument('-kma', '--kma', help="""Path to the merged kma results at species level, produced with  0_PCAs_MAGs_species_level.R (2_ccm_otus_clean_aggregated.csv)""", required=True)
-parser.add_argument('-b', '--sp2bin', help="file indicating the highest quality bin for each species, produced with select_MAGs.py (HQ_bins_with_compl.csv)", required=True)
+parser.add_argument('-kma', '--kma', help="""Path to the merged kma results at species level, replacing '.' by '_'. """, required=True)
 parser.add_argument('-op', '--output_production', help="""name of file to save total production. Default = total_production.csv""", required=False, default="total_production.csv")
 parser.add_argument('-oc', '--output_consumption', help="""name of file to save consumption. Default = total_consumption.csv""", required=False, default="total_consumption.csv")
 
 args = parser.parse_args()
 in_path = args.folder_w_exchange_files
 kma_res_fp = args.kma
-sp2bin_fp=args.sp2bin
 out_file_prod = args.output_production
 out_file_cons = args.output_consumption
 
 #in_path = "2_exchanges"
 #out_file_prod = "total_production.csv"
-#kma_res_fp = "2_ccm_otus_clean_aggregated.csv"
-#sp2bin_fp="HQ_bins_with_compl.csv"
+#kma_res_fp = "1.1_merged_kma_simplified4summarize_production_consumption.csv"
 
-
-###### Store the preferred bin as dict:
-sp2bin ={}
-with open(sp2bin_fp) as sp:
-    next(sp) # skip first line
-    for line in sp:
-        split_line = line.split(',')
-        binID = split_line[0]
-        tax = split_line[1].replace(" ", "_")
-        sp2bin[tax] = binID
 
 ###### read and parse KMA results (aggregated @ species level) - adding the representative bins to the table.
 kma_df = pd.read_csv(kma_res_fp,index_col = 0, encoding='latin1')
-kma_df['representative_bin'] = kma_df.index.map(sp2bin)
-kma_df2 = kma_df.set_index('representative_bin')
-kma_df2.rename_axis(None, inplace=True)
 
 # For each sample/taxon - get their absolute abundance
-kma_columns = kma_df2.stack().reset_index().rename(columns={'level_0':'rep_bin','level_1':'Sample', 0:'Abs_abundance'})
+kma_columns = kma_df.stack().reset_index().rename(columns={'level_0':'rep_bin','level_1':'Sample', 0:'Abs_abundance'})
 
 
 ## merge exchange files
