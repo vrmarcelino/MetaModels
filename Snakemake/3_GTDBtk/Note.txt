@@ -1,0 +1,19 @@
+We did not use snakemake here afterall. Snakemake is very convenient for HPC, but HPC servers often have issues with pplacer (think they need more memory than they actually need).
+
+We used a nctar instance instead (mba2):
+
+Steps:
+To transfer the desired files into folders of 1000 bins each with rsync
+
+
+Run GTDBtk for all bins:
+
+```
+screen
+conda activate gtdbtk
+
+#can be put to run in a bash script
+gtdbtk classify_wf --genome_dir 4_Classification/temp_bins_0 --out_dir 4_Classification/gtdb.outdir.0 --cpus 64
+gtdbtk classify_wf --genome_dir 4_Classification/temp_bins_1 --out_dir 4_Classification/gtdb.outdir.1 --cpus 32
+...
+```
