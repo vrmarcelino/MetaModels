@@ -1,17 +1,12 @@
----
-output:
-  html_document: default
-  pdf_document: 
-    latex_engine: xelatex
----
 # README
 
-This README contains the steps of the workflow associated with the manuscript ‘**Disease-specific loss of microbial cross-feeding interactions in the human gut’**, from quality control to visualization of final results.
+This repository contain scripts used (an many tested but not used) in the workflow associated with the manuscript ‘**Disease-specific loss of microbial cross-feeding interactions in the human gut’**, from quality control to visualization of the final results.
 
 
-Note that the intermediate files (e.g. metabolic exchanges obtained wth MICOM) and input files for the R scripts can also be found in the Zenodo repository.
+Intermediate files (e.g. metabolic exchanges obtained wth MICOM) and input files for the R scripts can be found in our Zenodo repository (doi:10.5281/zenodo.7582762).
 
-version 1.2.0
+The Zenodo repository also has a more organised structure - with scripts in folder named by the subset of analyses they were written for.
+
 
 <br />
 - **Quality control**
