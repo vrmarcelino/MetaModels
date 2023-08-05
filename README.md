@@ -106,7 +106,7 @@ snakemake --snakefile MICOM_Snakefile_grow.py --latency-wait 60 --cluster 'sbatc
 ```
 <br />
 
-## Metabolites Exchange Scores:
+## Metabolite Exchange Scoring System for Interdependence (MESSI):
 
 Calculate number of producers and consumers per metabolite
 
@@ -115,7 +115,11 @@ python3 MetModels_producers_consumers_per_rxn.py -f 2_exchanges -o 3_parsed_exch
 
 ```
 
-Then process the output files in R with the scripts in folder ‘Differences_in_MES’
+Then process the output files in R with the scripts in folder ‘MES/Differences_in_MES’
+
+MESSI == (2 x  ((n_produc * n_cons)/(n_produc+n_cons)))
+
+
 <br />
 
 ## Figure 2: MESSI scores in Health and Disease
