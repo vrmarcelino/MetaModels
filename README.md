@@ -1,125 +1,171 @@
-# MetaModels
-Scripts to analyse metagenome-wide metabolic models
+---
+output:
+  html_document: default
+  pdf_document: 
+    latex_engine: xelatex
+---
+# README
+
+This README contains the steps of the workflow associated with the manuscript ‘**Disease-specific loss of microbial cross-feeding interactions in the human gut’**, from quality control to visualization of final results.
 
 
-### Data mining:
-Train dataset: 1143 samples. Including 608 healthy and 535 diseased samples (running).
+Note that the intermediate files (e.g. metabolic exchanges obtained wth MICOM) and input files for the R scripts can also be found in the Zenodo repository.
 
-Test dataset: 554 samples. Including 280 healthy and 274 diseased samples (used for preliminary results).
+version 1.2.0
 
-### Initial workflow:
-Assembly (Megahit), Binning (VAMB), QC (CheckM), identification (GTDBtk), select one MAG per species, calculate bin abundances across samples.
+<br />
+- **Quality control**
 
-
-### Generate GEMs (CarveMe)
-For gap filling, we used the M8 media, which was based on Tramontano et al 2018 and is provided with the [metaGEM pipeline](https://github.com/franciscozorrilla/metaGEM).
-
-`carve {input.bin} --gapfill M8 --mediadb {input.media} -u {params.domain} -v -o {output}`
-
-
-### MICOM:
-
-After creating a manifest (one per sample), containing MAGs abundance and the path to GEMs, we used snakemake to run MICOM on multiple samples
-The [MICOM_Snakefile.py](https://github.com/vrmarcelino/MetaModels/tree/main/Snakemake/5_MICOM) has two rules: "build_community" and "tradeoff", explained in more detail below:
-
-#### 1. Build community models
-
-Rule "build_community" calls the [MICOM_build_comm_models.py](https://github.com/vrmarcelino/MetaModels/blob/main/MICOM_build_comm_models.py) script. This script will, for each sample:
-
-1.1. Build community:
-`com = Community(mag_tb)`
-
-1.2. Add media (western diet), to the community file, after diluting some nutrients to account for absorption in the intestine:
+QC - Read quality with TrimGalore! (Krueger)
+This will remove Illumina adapters and low-quality sequences.
+Illumina’s Genome Analyser also uses Sanger quality encoding (Phred), so no need to worry. Minimum len = 80bp. and minimum phred = 25.
 
 ```
-# check if the names match & add to the community object:
-ex_ids = [r.id for r in com.exchanges]
-
-# replace _m with _e_m (see what needs to change with the --fbc2 models)
-medium = medium.replace(regex=r'_m$', value='_e_m')
-
-medium['reaction'].isin(ex_ids).sum() # must be a large number of reactions (>100)
-medium.index = medium.index.str.replace(r'_m$','_e_m', regex=True)
-med = medium[medium.index.isin(ex_ids)] # exclude medium items not used by the microbiome
-
-diet = med.flux * med.dilution # dilute nutrients absorbed in the small intestine
-
-# This only affects the com.cooperative_tradeoff (the grow workflow is not affected)
-com.medium = diet
+trim_galore --paired --length 80 --quality 25 --cores 4 --output_dir 01_CleanReads --fastqc 00_ENA_downloads/ERRxx.fastq.gz 00_ENA_downloads/ERRxx.fastq.gz
 ```
 
-1.3. saves this community to file, in pickle format.
-
-
-#### 2. Cooperative tradeoffs - calculate metabolic exchanges
-
-The script [MICOM_coop_tradeoff.py](https://github.com/vrmarcelino/MetaModels/blob/main/MICOM_coop_tradeoff.py) optimizes the cooperative tradeoff, first using the western media for upper boundaries, then using the minimal media to get the metabolic exchanges. This script was largely based on the code developed for the MICOM paper:
-
-Each sample will run thought the function:
-
+Remove human reads (use python script for batch analyses) - Bowtie2 (Langmead 2012)
 ```
-def media_and_gcs(sam):
-    com = load_pickle(pickles_path +"/"+ sam)
-
-    # Get growth rates
-    try:
-        sol = com.cooperative_tradeoff(fraction=trade_off)
-        rates = sol.members["growth_rate"].copy()
-        rates["community"] = sol.growth_rate
-        rates.name = sam
-    except Exception:
-        logger.warning("Could not solve cooperative tradeoff for %s." % sam)
-        return None
-
-    # Get the minimal medium
-    med = minimal_medium(com, 0.95 * sol.growth_rate, exports=True)
-    med.name = sam
-
-    # Apply medium and reoptimize
-    com.medium = med[med > 0]
-    sol = com.cooperative_tradeoff(fraction=0.5, fluxes=True, pfba=False) # uses the 'classic' FBA instead of the parsimonious FBA
-    fluxes = sol.fluxes
-    fluxes["sample"] = sam
-    return {"medium": med, "gcs": rates, "fluxes": fluxes}
+bowtie2 -p $th -x $db -1 01_CleanReads/ERR1190655_1_val_1.fq.gz -2 01_CleanReads/ERR1190655_2_val_2.fq.gz --un-conc  02_Host_Removed/ERRxx > 02_Host_Removed/ERRxx.sam.temp
 ```
 
-This will generate growth rates, media (file minimal_imports_xx) and fluxes (minimal_fluxes_all_).
+Rarefy sequences
+```
+seqtk sample -s 8 02_Host_Removed/ERRxx.1 15000000 > 03_Rarefied/ERRxx_R1.fq
+```
+<br />
+- **Metagenome assembly and binning**
 
-From the flux output, we extracted the exchange_reactions with the filtering:
+We performed sequence assembly on individual samples using Megahit (Li et al 2015)
 
 ```
-ex_flux = fluxes.filter(regex='^EX_') # get only exchanges (starts with 'EX_')
-ex_flux = ex_flux.filter(regex='e$') # remove media (media ends with 'e_m', so I want the ones that end with 'e' only)
-ex_flux = ex_flux.fillna(0) #fill NANs with zeros
-
-ex_flux = ex_flux.loc[:, (ex_flux != 0).any(axis=0)] #remove columns with all zeros
-ex_flux['sample'] = fluxes['sample']
-ex_flux = ex_flux.drop(index='medium') # remove medium
+megahit -t 12 --presets meta-sensitive --verbose --min-contig-len 1000 -1 {input.R1} -2 {input.R2} -o {params.out_folder}_tmp
 ```
-And save it as 'minimal_fluxes_exchange_xxx' file (one per sample)
+
+See 'Assembly_Binning/1_megahit/' folder for the Snakemake workflow.
+
+We then performed co-binning of samples in two batches (Sup. table S1) using the [workflow suggested for VAMB](https://github.com/RasmussenLab/vamb).
+
+<br />
+
+VAMB (Nissen et al 2021) was run with default parameters:
+```
+vamb --outdir 2_vamb --fasta {input.contigs} --jgi {input.jgi} -p 12 -o C -m 2000 --minfasta 500000
+```
+
+See 'Assembly_Binning/2_vamb/' folder for the Snakemake workflow.
 
 
-### Post-processing:
+<br />
+- **MAGs QC, classification and abundance**
 
-1. Merge exchange tables for all samples into a single csv file with [MetModels_merge_exchange_tables.py](https://github.com/vrmarcelino/MetaModels/blob/main/MetModels_merge_exchange_tables.py)
+CheckM (Parks 2015) was used to evaluate the completeness and contamination of the bins:
+```
+checkm lineage_wf -f  + out_file +  -t 8 -x fna  + in_folder +   + out_folder
+```
+<br />
 
-The output of this file can be used to calculate interaction networks (where nodes are species and/or metabolites, and edges represent the flux of the metabolic exchanges).
+The High quality bins (>90% completeness and < 5% contamination) were dereplicated with dRep (Olm et al 2017):
+```
+dRep dereplicate 1_drep_genomes -g 0_all_HQ_bins/*.fna --genomeInfo checkm_all.csv -p 24 -pa 0.95 --SkipSecondary
+```
+<br />
+Taxonomic classification was performed with GTDBtk (Chaumeil et al 2019):
+```
+gtdbtk classify_wf --genome_dir 4_Classification/temp_bins_0 --out_dir 4_Classification/gtdb.outdir.0 --cpus 64
+```
+<br />
+To estimate the abundance of the species-level MAGs in ecah sample, we used KMA (Clausen et al 2018).
+```
+#index database:
+kma index -i 0_merged_bins_renamed.fas -o MAGs_db_sparse -NI -Sparse TG
 
-Note - spp abundance not taken into consideration so far (except when building the community).
+#run KMA:
+kma -ipe $in_file_f $in_file_r -o $out_file -t_db $db -t 3 -1t1 -mem_mode -and -apm p -ef -tmp KMA_temp
+ 
+```
+
+<br />
+- **Genome-scale metabolic models**
+
+We then built genome-scale metabolic models for each species-level MAG with CarveMe (Machado et al 2018), using their domain classification (Bacteria or Archaea) as parameter for their universe.
+
+```
+carve {input.bin} --gapfill western_diet_gut --mediadb {input.media} -u {params.domain} -v -o {output}
+```
+
+<br />
+- **Community-wide modelling with MICOM (Diener et al 2020)**
+
+First make a txt file with sample names in the 0_MAGs_tables folder (ls -1 > all_samples.txt). Remove the “.csv” from all lines & “all_samples” from first line.
+
+```bash
+screen -L -S micom
+mkdir -p z_snakemake_logs
+conda activate snakemake_cplex
+
+snakemake --snakefile MICOM_Snakefile_grow.py --latency-wait 60 --cluster 'sbatch --output=z_snakemake_logs/%j.out --error=z_snakemake_logs/%j.out -t {resources.time_min} --mem={resources.mem_mb} -c {resources.cpus} -p short,comp' -j 900 -np
+
+```
+<br />
+- **Metabolites Exchange Scores:**
+
+Calculate number of producers and consumers per metabolite
+
+```bash
+python3 MetModels_producers_consumers_per_rxn.py -f 2_exchanges -o 3_parsed_exchanges/producers_consumers.csv
+
+```
+
+Then process the output files in R with the scripts in folder ‘Differences_in_MES’
+<br />
+
+- **Figure 2: MESSI scores in Health and Disease**
+
+Panel a: The tree file was generated with GTDBtk de novo workflow (Chaumeil et al 2020), and visualized with iTOL (Letunic & Bork 2021).
+
+Scripts to reproduce panels b and c are in 'MES/Differences_in_MES' folder.
+
+See 'Figure2b_metabolite_imp_healthy.R' script to reproduce panel b
+
+See 'Figure2c_MES_barplots_all.R' script to reproduce the panel c
 
 
-2. Summarize net production and consumption of specific metabolites per sample with [R script summarize_exchanges.R](https://github.com/vrmarcelino/MetaModels/blob/main/summarize_exchanges.R). This script will, for each sample, sum the total production of each metabolite, and subtract the consumption, in order to calculate the net exchange of metabolites per sample. The output is a csv table with one sample per row and one metabolite per column (negative indicating net consumption and positive indicating net production).
+<br />
+- **Crohn’s disease (CD)**
 
-Note - spp abundance not taken into consideration here either, at least not yet.
+Calculate flux considering species abundances (done in HPC)
 
+```bash
+smux new-session --time=6:00:00 --mem=200G --partition=short,comp
 
-### Questions / points for discussion:
-1. Media (in carveme, build_community and tradeoffs)
-2. Exchange reactions:
+python3 MetModels_summarize_net_produc.py -f 2_exchanges -o 3_parsed_exchanges/net_produc_consump_merged.csv
 
-	Drop medium or meaningful info?
+python3 MetModels_summarize_total_produc_consump.py -f 2_exchanges -kma 1.1_merged_kma_simplified4summarize_production_consumption.csv -op 3_parsed_exchanges/total_production.csv -oc 3_parsed_exchanges/total_consumption.csv
 
-	com.cooperative_tradeoff -> seems less subjective to errors ("solver encountered an error infeasible") than grow workflow?
-    
-3. Adjust for spp. abundances
+```
 
+Note that net production here is a table with net production / consumption of metabolites by the microbiome
+-> these are the exchanges with the media (“_m”), as they indicate the “excess" of metabolites that are released or consumed from the environment. The values are already corrected for species' relative abundance.
+
+Statistics for H2S production and consumption are detailed within the R scripts (scripts in CD+_focus/R_graphs/xxx.R)
+
+<br />
+- **Network analyses for CD:**
+
+From metadata, produce 2 files containing prefixes of samples of CD and Healthy individuals .
+It is important to have the same number of samples in healthy and diseased cohort here, so I am using all 38 samples from the healthy cohort that worked and 38 samples from the CD cohort (randomly deleted other samples)
+
+In HPC, produce nodes and edges file:
+
+```bash
+./MetModels_create_global_network_from_list.py -if 2_exchanges/ -s He_CD_prefixes_rarefied.txt -m h2s_e -sp wanted_spp_classification.tsv -on 4_nodes_edges_He2017/He_CD_nodes.csv -oe 4_nodes_edges_He2017/He_CD_edges.csv
+
+./MetModels_create_global_network_from_list.py -if 2_exchanges/ -s He_healthy_prefixes_all_that_worked.txt -m h2s_e -sp wanted_spp_classification.tsv -on 4_nodes_edges_He2017/He_healthy_nodes.csv -oe 4_nodes_edges_He2017/He_healthy_edges.csv
+```
+
+The output of these scripts can be processed with R (scripts in CD+_focus/R_graphs/xxx.R) to identify a consortium of microbes with promising therapeutic potential.
+
+<br />
+If you have any questions please get in touch: vmarcelino-at-unimelb.edu.au
+<br />
