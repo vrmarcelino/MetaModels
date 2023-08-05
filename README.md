@@ -1,6 +1,6 @@
 # README
 
-This repository contain scripts used (an many tested but not used) in the workflow associated with the manuscript ‘**Disease-specific loss of microbial cross-feeding interactions in the human gut’**, from quality control to visualization of the final results.
+This repository contain scripts used (an many tested but not used) in the workflow associated with the manuscript [**Disease-specific loss of microbial cross-feeding interactions in the human gut**](https://www.biorxiv.org/content/10.1101/2023.02.17.528570v1), from quality control to visualization of the final results.
 
 
 Intermediate files (e.g. metabolic exchanges obtained wth MICOM) and input files for the R scripts can be found in our Zenodo repository (doi:10.5281/zenodo.7582762).
@@ -9,7 +9,7 @@ The Zenodo repository also has a more organised structure - with scripts in fold
 
 
 <br />
-- **Quality control**
+## Quality control
 
 QC - Read quality with TrimGalore! (Krueger)
 This will remove Illumina adapters and low-quality sequences.
@@ -29,7 +29,7 @@ Rarefy sequences
 seqtk sample -s 8 02_Host_Removed/ERRxx.1 15000000 > 03_Rarefied/ERRxx_R1.fq
 ```
 <br />
-- **Metagenome assembly and binning**
+## Metagenome assembly and binning
 
 We performed sequence assembly on individual samples using Megahit (Li et al 2015)
 
