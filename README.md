@@ -9,6 +9,7 @@ The Zenodo repository also has a more organised structure - with scripts in fold
 
 
 <br />
+
 ## Quality control
 
 QC - Read quality with TrimGalore! (Krueger)
@@ -29,6 +30,7 @@ Rarefy sequences
 seqtk sample -s 8 02_Host_Removed/ERRxx.1 15000000 > 03_Rarefied/ERRxx_R1.fq
 ```
 <br />
+
 ## Metagenome assembly and binning
 
 We performed sequence assembly on individual samples using Megahit (Li et al 2015)
@@ -103,7 +105,8 @@ snakemake --snakefile MICOM_Snakefile_grow.py --latency-wait 60 --cluster 'sbatc
 
 ```
 <br />
-- **Metabolites Exchange Scores:**
+
+## Metabolites Exchange Scores:
 
 Calculate number of producers and consumers per metabolite
 
@@ -115,7 +118,7 @@ python3 MetModels_producers_consumers_per_rxn.py -f 2_exchanges -o 3_parsed_exch
 Then process the output files in R with the scripts in folder ‘Differences_in_MES’
 <br />
 
-- **Figure 2: MESSI scores in Health and Disease**
+## Figure 2: MESSI scores in Health and Disease
 
 Panel a: The tree file was generated with GTDBtk de novo workflow (Chaumeil et al 2020), and visualized with iTOL (Letunic & Bork 2021).
 
@@ -127,7 +130,8 @@ See 'Figure2c_MES_barplots_all.R' script to reproduce the panel c
 
 
 <br />
-- **Crohn’s disease (CD)**
+
+## Crohn’s disease (CD)
 
 Calculate flux considering species abundances (done in HPC)
 
@@ -146,7 +150,8 @@ Note that net production here is a table with net production / consumption of me
 Statistics for H2S production and consumption are detailed within the R scripts (scripts in CD+_focus/R_graphs/xxx.R)
 
 <br />
-- **Network analyses for CD:**
+
+## Network analyses for CD:
 
 From metadata, produce 2 files containing prefixes of samples of CD and Healthy individuals .
 It is important to have the same number of samples in healthy and diseased cohort here, so I am using all 38 samples from the healthy cohort that worked and 38 samples from the CD cohort (randomly deleted other samples)
