@@ -54,7 +54,8 @@ See 'Assembly_Binning/2_vamb/' folder for the Snakemake workflow.
 
 
 <br />
-- **MAGs QC, classification and abundance**
+
+## MAGs QC, classification and abundance:
 
 CheckM (Parks 2015) was used to evaluate the completeness and contamination of the bins:
 ```
@@ -67,7 +68,10 @@ The High quality bins (>90% completeness and < 5% contamination) were dereplicat
 dRep dereplicate 1_drep_genomes -g 0_all_HQ_bins/*.fna --genomeInfo checkm_all.csv -p 24 -pa 0.95 --SkipSecondary
 ```
 <br />
-Taxonomic classification was performed with GTDBtk (Chaumeil et al 2019):
+Taxonomic classification was performed with GTDBtk (Chaumeil et al 2019).
+This step was performed in our Nectar instance (instead of our HPC) because HPC servers often have issues with pplacer (they think they need more memory than they actually need).
+We placed the metagenome bins into folders containing 1000 bins each (temp_bins_xx), and run GTDBtk:
+
 ```
 gtdbtk classify_wf --genome_dir 4_Classification/temp_bins_0 --out_dir 4_Classification/gtdb.outdir.0 --cpus 64
 ```
